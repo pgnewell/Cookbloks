@@ -27,6 +27,21 @@ sub index :Path :Args(0) {
     $c->response->body('Matched CookBloks::Controller::Step::Single in Step::Single.');
 }
 
+sub single :Local :Args(1) {
+    # Retrieve the usual Perl OO '$self' for this object. $c is the Catalyst
+    # 'Context' that's used to 'glue together' the various components
+    # that make up the application
+    my ($self, $c, $step_name) = @_;
+
+    # Retrieve all of the recipe records as book model objects and store in the
+    # stash where they can be accessed by the TT template
+    $c->stash(steps => [$c->model('DB::StepTypes')->find({ name => $step_name})]);
+
+    # Set the TT template to use.  You will almost always want to do this
+    # in your action methods (action methods respond to user input in
+    # your controllers).
+    $c->stash(template => 'recipes/test_step.tt2');
+}
 
 =head1 AUTHOR
 
