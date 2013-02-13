@@ -1,0 +1,7 @@
+[% META title = 'Single Step test' -%]
+
+<form method="post" action="[% c.uri_for('single_step_submit') %]">
+Step name [% step.html %] <br/>
+<input type="submit" name="Submit" value="Submit">
+</form>
+

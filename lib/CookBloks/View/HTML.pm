@@ -10,7 +10,7 @@ __PACKAGE__->config(
     TEMPLATE_EXTENSION => '.tt2',
     # Set the location for TT files
     INCLUDE_PATH => [
-            MyApp->path_to( 'root', 'src' ),
+            CookBloks->path_to( 'root', 'src' ),
         ],
     # Set to 1 for detailed timer stats in your HTML as comments
     TIMER              => 0,

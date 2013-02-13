@@ -2,14 +2,16 @@ package CookBloks::Model::DB;
 
 use strict;
 use base 'Catalyst::Model::DBIC::Schema';
+use Catalyst qw{ ConfigLoader };
 
 __PACKAGE__->config(
     schema_class => 'CookBloks::Schema',
     
     connect_info => {
-        dsn => 'dbi:Pg:dbname=ActiveRecip',
-        user => 'on_connect_do=PRAGMA foreign_keys = ON',
-        password => '',
+        dsn => 'dbi:Pg:dbname=recipes',
+        user => 'catappuser',
+        password => 'catalyst',
+        AutoCommit => q{1},
     }
 );
 
