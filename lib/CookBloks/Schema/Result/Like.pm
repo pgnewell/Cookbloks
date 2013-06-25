@@ -26,13 +26,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
-=item * L<DBIx::Class::PassphraseColumn>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
 
 =head1 TABLE: C<likes>
 
@@ -45,20 +43,22 @@ __PACKAGE__->table("likes");
 =head2 user_id
 
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
 =head2 recipe_id
 
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
 =cut
 
 __PACKAGE__->add_columns(
   "user_id",
-  { data_type => "integer", is_nullable => 0 },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "recipe_id",
-  { data_type => "integer", is_nullable => 0 },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -75,9 +75,41 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("user_id", "recipe_id");
 
+=head1 RELATIONS
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-12 23:09:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uEBLijk64GYx6FG/WNeajw
+=head2 recipe
+
+Type: belongs_to
+
+Related object: L<CookBloks::Schema::Result::Recipe>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "recipe",
+  "CookBloks::Schema::Result::Recipe",
+  { id => "recipe_id" },
+  { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
+);
+
+=head2 user
+
+Type: belongs_to
+
+Related object: L<CookBloks::Schema::Result::User>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "user",
+  "CookBloks::Schema::Result::User",
+  { id => "user_id" },
+  { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-30 13:31:43
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2vL5P6GwLloXXlGJGP3YCA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

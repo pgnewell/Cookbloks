@@ -26,13 +26,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
-=item * L<DBIx::Class::PassphraseColumn>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
 
 =head1 TABLE: C<steps>
 
@@ -45,16 +43,18 @@ __PACKAGE__->table("steps");
 =head2 recipe
 
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
-=head2 seq
+=head2 step
 
   data_type: 'integer'
-  is_nullable: 1
+  is_nullable: 0
 
 =head2 type
 
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 1
 
 =head2 instructions
@@ -68,11 +68,11 @@ __PACKAGE__->table("steps");
 
 __PACKAGE__->add_columns(
   "recipe",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "step",
   { data_type => "integer", is_nullable => 0 },
-  "seq",
-  { data_type => "integer", is_nullable => 1 },
   "type",
-  { data_type => "integer", is_nullable => 1 },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
   "instructions",
   {
     data_type => "varchar",
@@ -82,9 +82,75 @@ __PACKAGE__->add_columns(
   },
 );
 
+=head1 PRIMARY KEY
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-12 23:09:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:iCG3XW7Co9lgIAt/n1HASQ
+=over 4
+
+=item * L</recipe>
+
+=item * L</step>
+
+=back
+
+=cut
+
+__PACKAGE__->set_primary_key("recipe", "step");
+
+=head1 RELATIONS
+
+=head2 dependent_step
+
+Type: might_have
+
+Related object: L<CookBloks::Schema::Result::DependentStep>
+
+=cut
+
+__PACKAGE__->might_have(
+  "dependent_step",
+  "CookBloks::Schema::Result::DependentStep",
+  { "foreign.recipe" => "self.recipe", "foreign.step" => "self.step" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 recipe
+
+Type: belongs_to
+
+Related object: L<CookBloks::Schema::Result::Recipe>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "recipe",
+  "CookBloks::Schema::Result::Recipe",
+  { id => "recipe" },
+  { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
+);
+
+=head2 type
+
+Type: belongs_to
+
+Related object: L<CookBloks::Schema::Result::StepType>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "type",
+  "CookBloks::Schema::Result::StepType",
+  { id => "type" },
+  {
+    is_deferrable => 0,
+    join_type     => "LEFT",
+    on_delete     => "CASCADE,",
+    on_update     => "CASCADE,",
+  },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-30 13:31:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7mP1bGMYV6FJEbhiORoS+g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

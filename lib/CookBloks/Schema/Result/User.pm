@@ -26,13 +26,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
-=item * L<DBIx::Class::PassphraseColumn>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
 
 =head1 TABLE: C<users>
 
@@ -89,6 +87,12 @@ __PACKAGE__->table("users");
   is_nullable: 0
   size: 255
 
+=head2 username
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 255
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -113,6 +117,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "last_name",
   { data_type => "varchar", is_nullable => 0, size => 255 },
+  "username",
+  { data_type => "varchar", is_nullable => 0, size => 255 },
 );
 
 =head1 PRIMARY KEY
@@ -127,9 +133,76 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+=head1 RELATIONS
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-12 23:09:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:cNVq35ysLcv6sp2MOnUcNA
+=head2 likes
+
+Type: has_many
+
+Related object: L<CookBloks::Schema::Result::Like>
+
+=cut
+
+__PACKAGE__->has_many(
+  "likes",
+  "CookBloks::Schema::Result::Like",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 recipes_2s
+
+Type: has_many
+
+Related object: L<CookBloks::Schema::Result::Recipe>
+
+=cut
+
+__PACKAGE__->has_many(
+  "recipes_2s",
+  "CookBloks::Schema::Result::Recipe",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 user_roles
+
+Type: has_many
+
+Related object: L<CookBloks::Schema::Result::UserRole>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_roles",
+  "CookBloks::Schema::Result::UserRole",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 recipes
+
+Type: many_to_many
+
+Composing rels: L</likes> -> recipe
+
+=cut
+
+__PACKAGE__->many_to_many("recipes", "likes", "recipe");
+
+=head2 roles
+
+Type: many_to_many
+
+Composing rels: L</user_roles> -> role
+
+=cut
+
+__PACKAGE__->many_to_many("roles", "user_roles", "role");
+
+
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-30 13:31:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:WKbmpaRHD6AFL5TZZISjeQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

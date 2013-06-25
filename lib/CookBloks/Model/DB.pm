@@ -4,6 +4,7 @@ use strict;
 use base 'Catalyst::Model::DBIC::Schema';
 use Catalyst qw{ ConfigLoader };
 
+=cut
 __PACKAGE__->config(
     schema_class => 'CookBloks::Schema',
     

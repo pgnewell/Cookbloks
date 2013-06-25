@@ -3,6 +3,6 @@ use warnings;
 use Test::More;
 
 
-BEGIN { use_ok 'CookBloks::View::HTML' }
+BEGIN { $DB::single=1; use_ok 'CookBloks::View::HTML' }
 
 done_testing();

@@ -38,13 +38,36 @@ sub single :Local :Args(1) {
     # Retrieve all of the recipe records as book model objects and store in the
     # stash where they can be accessed by the TT template
     $c->stash(step => $c->model('DB::StepType')->find({ name => $step_name}));
-
+	
     # Set the TT template to use.  You will almost always want to do this
     # in your action methods (action methods respond to user input in
     # your controllers).
     $c->stash(template => 'steps/single_step_form.tt2');
+	$c->stash->{current_view} = 'HTML';
 }
 
+sub getdata :Local {
+  my ($self, $c) = @_;
+
+  my $inv_rs = $c->model('DB::Inventory')->search({});
+  #$inv_rs = $self->jqgrid_page($c, $inv_rs);
+  my @row_data;
+  while (my $inv = $inv_rs->next) {
+    my $single_row = {
+      cell => [
+        $inv->inv_id,
+        $inv->client_id,
+        $inv->amount,
+        $inv->tax,
+        $inv->total,
+        $inv->note,
+      ],
+    };
+    push @row_data, $single_row;
+  }
+  $c->stash->{json_data}{rows} = \@row_data;
+  $c->stash->{current_view} = 'JSON';
+}
 
 
 =head1 AUTHOR

@@ -26,13 +26,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
-=item * L<DBIx::Class::PassphraseColumn>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
 
 =head1 TABLE: C<step_types>
 
@@ -129,9 +127,26 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+=head1 RELATIONS
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-12 23:09:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aGZLgUO977j5EKnkijvfqg
+=head2 steps
+
+Type: has_many
+
+Related object: L<CookBloks::Schema::Result::Step>
+
+=cut
+
+__PACKAGE__->has_many(
+  "steps",
+  "CookBloks::Schema::Result::Step",
+  { "foreign.type" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-30 13:31:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Q6o5Dh2DyF1y+qrgdHIPqA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

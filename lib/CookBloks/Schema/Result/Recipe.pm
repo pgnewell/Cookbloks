@@ -26,13 +26,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
-=item * L<DBIx::Class::PassphraseColumn>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
 
 =head1 TABLE: C<recipes>
 
@@ -72,7 +70,20 @@ __PACKAGE__->table("recipes");
 =head2 user_id
 
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
+
+=head2 ts
+
+  data_type: 'timestamp'
+  default_value: current_timestamp
+  is_nullable: 0
+  original: {default_value => \"now()"}
+
+=head2 created
+
+  data_type: 'timestamp'
+  is_nullable: 1
 
 =cut
 
@@ -101,7 +112,16 @@ __PACKAGE__->add_columns(
     size => 255,
   },
   "user_id",
-  { data_type => "integer", is_nullable => 0 },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "ts",
+  {
+    data_type     => "timestamp",
+    default_value => \"current_timestamp",
+    is_nullable   => 0,
+    original      => { default_value => \"now()" },
+  },
+  "created",
+  { data_type => "timestamp", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -116,9 +136,81 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+=head1 RELATIONS
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-12 23:09:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:8cNyHqqvCwQ4JDIje0IsEA
+=head2 dependent_steps
+
+Type: has_many
+
+Related object: L<CookBloks::Schema::Result::DependentStep>
+
+=cut
+
+__PACKAGE__->has_many(
+  "dependent_steps",
+  "CookBloks::Schema::Result::DependentStep",
+  { "foreign.recipe" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 likes
+
+Type: has_many
+
+Related object: L<CookBloks::Schema::Result::Like>
+
+=cut
+
+__PACKAGE__->has_many(
+  "likes",
+  "CookBloks::Schema::Result::Like",
+  { "foreign.recipe_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 steps
+
+Type: has_many
+
+Related object: L<CookBloks::Schema::Result::Step>
+
+=cut
+
+__PACKAGE__->has_many(
+  "steps",
+  "CookBloks::Schema::Result::Step",
+  { "foreign.recipe" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 user
+
+Type: belongs_to
+
+Related object: L<CookBloks::Schema::Result::User>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "user",
+  "CookBloks::Schema::Result::User",
+  { id => "user_id" },
+  { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
+);
+
+=head2 users
+
+Type: many_to_many
+
+Composing rels: L</likes> -> user
+
+=cut
+
+__PACKAGE__->many_to_many("users", "likes", "user");
+
+
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-30 16:59:20
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:y19ihX+0wvf0Nx431z1paQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

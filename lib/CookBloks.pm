@@ -20,6 +20,16 @@ use Catalyst qw/
     -Debug
     ConfigLoader
     Static::Simple
+	StackTrace
+
+    Authentication
+    Authorization::Roles
+
+    Session
+    Session::Store::File
+    Session::State::Cookie
+
+    StatusMessage
 /;
 
 extends 'Catalyst';
@@ -40,17 +50,33 @@ __PACKAGE__->config(
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
     enable_catalyst_header => 1, # Send X-Catalyst header
+	default_view => 'HTML'
 );
 
+__PACKAGE__->config({
+  'View::JSON' => {
+    expose_stash => qw(json_data)
+  }
+});
+
+# Configure SimpleDB Authentication
 __PACKAGE__->config(
-    # Configure the view
-    'View::HTML' => {
-        #Set the location for TT files
-        INCLUDE_PATH => [
-            __PACKAGE__->path_to( 'root', 'src' ),
-        ],
-    },
+	'Plugin::Authentication' => {
+		default => {
+			class           => 'SimpleDB',
+			user_model      => 'RecipeDB::User',
+			password_type   => 'clear',
+		},
+	},
 );
+
+# stuff for the Jemplate even thought I don't know if I want this yet
+
+__PACKAGE__->config->{cache}{expires} = 43200;
+__PACKAGE__->config->{cache}{backends}{jemplate}{store} = 'FastMmap';
+__PACKAGE__->config->{'View::Jemplate'}{jemplate_dir} = 
+	__PACKAGE__->path_to('root', 'jemplate');
+__PACKAGE__->config->{'View::Jemplate'}{jemplate_ext} = '.tt2';
 
 # Start the application
 __PACKAGE__->setup();
