@@ -1,0 +1,23 @@
+<link rel="stylesheet" href="/css/reset.css" type="text/css" media="screen, projection">
+<link rel="stylesheet" href="/css/grid.css" type="text/css" media="screen, projection">
+<link rel="stylesheet" href="/css/type.css" type="text/css" media="screen, projection">
+<link rel="stylesheet" href="/css/gadgets.css" type="text/css" media="screen, projection">
+<!--[if IE]>
+<link rel="stylesheet" href="css/ie.css" type="text/css" media="screen, projection">
+<![endif]-->
+
+<style type="text/css">
+	.main{width:90%;}
+
+	.bg1{background-color:#555; }
+	.bg2{background-color:#666; }
+	.bg3{background-color:#777; }
+	.bg4{background-color:#888; }
+	.bg5{background-color:#999; }
+	.bg6{background-color:#ccc; }
+	.hg1{ height:5em;}
+	.hg2{ height:40em; }
+	.hg3{ height:20em;}
+	.hg4{ height:50em;}
+</style>
+

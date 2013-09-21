@@ -1,12 +1,12 @@
 use utf8;
-package CookBloks::Schema::Result::Like;
+package CookBloks::Schema::RecipeDB::Result::DependentStep;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-CookBloks::Schema::Result::Like
+CookBloks::Schema::RecipeDB::Result::DependentStep
 
 =cut
 
@@ -32,48 +32,55 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
 
-=head1 TABLE: C<likes>
+=head1 TABLE: C<dependent_steps>
 
 =cut
 
-__PACKAGE__->table("likes");
+__PACKAGE__->table("dependent_steps");
 
 =head1 ACCESSORS
 
-=head2 user_id
+=head2 recipe
 
   data_type: 'integer'
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 recipe_id
+=head2 step
 
   data_type: 'integer'
   is_foreign_key: 1
+  is_nullable: 0
+
+=head2 dependent
+
+  data_type: 'integer'
   is_nullable: 0
 
 =cut
 
 __PACKAGE__->add_columns(
-  "user_id",
+  "recipe",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "recipe_id",
+  "step",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "dependent",
+  { data_type => "integer", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
 
 =over 4
 
-=item * L</user_id>
+=item * L</recipe>
 
-=item * L</recipe_id>
+=item * L</step>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("user_id", "recipe_id");
+__PACKAGE__->set_primary_key("recipe", "step");
 
 =head1 RELATIONS
 
@@ -81,35 +88,35 @@ __PACKAGE__->set_primary_key("user_id", "recipe_id");
 
 Type: belongs_to
 
-Related object: L<CookBloks::Schema::Result::Recipe>
+Related object: L<CookBloks::Schema::RecipeDB::Result::Recipe>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "recipe",
-  "CookBloks::Schema::Result::Recipe",
-  { id => "recipe_id" },
+  "CookBloks::Schema::RecipeDB::Result::Recipe",
+  { id => "recipe" },
   { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
 );
 
-=head2 user
+=head2 step
 
 Type: belongs_to
 
-Related object: L<CookBloks::Schema::Result::User>
+Related object: L<CookBloks::Schema::RecipeDB::Result::Step>
 
 =cut
 
 __PACKAGE__->belongs_to(
-  "user",
-  "CookBloks::Schema::Result::User",
-  { id => "user_id" },
-  { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
+  "step",
+  "CookBloks::Schema::RecipeDB::Result::Step",
+  { recipe => "recipe", step => "step" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5LiWZA5qN49bjQlKjt/gJg
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-29 17:46:17
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TDOPFXTUrjL0HrIxjoK60g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

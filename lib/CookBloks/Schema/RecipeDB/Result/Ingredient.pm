@@ -1,12 +1,12 @@
 use utf8;
-package CookBloks::Schema::Result::Ingredient;
+package CookBloks::Schema::RecipeDB::Result::Ingredient;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-CookBloks::Schema::Result::Ingredient
+CookBloks::Schema::RecipeDB::Result::Ingredient
 
 =cut
 
@@ -61,9 +61,7 @@ __PACKAGE__->add_columns(
   { data_type => "char", is_nullable => 1, size => 255 },
 );
 
-=head1 UNIQUE CONSTRAINTS
-
-=head2 C<ingredients_name_key>
+=head1 PRIMARY KEY
 
 =over 4
 
@@ -73,11 +71,11 @@ __PACKAGE__->add_columns(
 
 =cut
 
-__PACKAGE__->add_unique_constraint("ingredients_name_key", ["name"]);
+__PACKAGE__->set_primary_key("name");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:k4sw6Mu1CG9rZfKlUdnkPA
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-22 11:52:13
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pD6CYEGYyri8w43CJhIIcQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

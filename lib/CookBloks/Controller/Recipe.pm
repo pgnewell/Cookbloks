@@ -152,6 +152,16 @@ sub save_form : Private {
 	$c->redirect_to_action('Recipe', 'edit', [$item->article_id]);
 }
  
+sub thumbnail :Local :Args(2) {
+	my ($self, $c, $user_id, $image_file_path) = @_;
+
+	$c->stash->{x}     = 100;    # Create a 100px wide thumbnail
+	$c->stash->{y}     = 100;    # Create a 100px tall thumbnail
+	$c->stash->{image} = "/images/$user_id/$image_file_path";
+
+	$c->forward('View::Thumbnail');
+}
+
 sub not_found : Local {
 	my ($self, $c) = @_;
 	$c->response->status(404);

@@ -1,12 +1,12 @@
 use utf8;
-package CookBloks::Schema::Result::Recipe;
+package CookBloks::Schema::RecipeDB::Result::Recipe;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-CookBloks::Schema::Result::Recipe
+CookBloks::Schema::RecipeDB::Result::Recipe
 
 =cut
 
@@ -142,13 +142,13 @@ __PACKAGE__->set_primary_key("id");
 
 Type: has_many
 
-Related object: L<CookBloks::Schema::Result::DependentStep>
+Related object: L<CookBloks::Schema::RecipeDB::Result::DependentStep>
 
 =cut
 
 __PACKAGE__->has_many(
   "dependent_steps",
-  "CookBloks::Schema::Result::DependentStep",
+  "CookBloks::Schema::RecipeDB::Result::DependentStep",
   { "foreign.recipe" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -157,13 +157,13 @@ __PACKAGE__->has_many(
 
 Type: has_many
 
-Related object: L<CookBloks::Schema::Result::Like>
+Related object: L<CookBloks::Schema::RecipeDB::Result::Like>
 
 =cut
 
 __PACKAGE__->has_many(
   "likes",
-  "CookBloks::Schema::Result::Like",
+  "CookBloks::Schema::RecipeDB::Result::Like",
   { "foreign.recipe_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -172,13 +172,13 @@ __PACKAGE__->has_many(
 
 Type: has_many
 
-Related object: L<CookBloks::Schema::Result::Step>
+Related object: L<CookBloks::Schema::RecipeDB::Result::Step>
 
 =cut
 
 __PACKAGE__->has_many(
   "steps",
-  "CookBloks::Schema::Result::Step",
+  "CookBloks::Schema::RecipeDB::Result::Step",
   { "foreign.recipe" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -187,13 +187,13 @@ __PACKAGE__->has_many(
 
 Type: belongs_to
 
-Related object: L<CookBloks::Schema::Result::User>
+Related object: L<CookBloks::Schema::RecipeDB::Result::User>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "user",
-  "CookBloks::Schema::Result::User",
+  "CookBloks::Schema::RecipeDB::Result::User",
   { id => "user_id" },
   { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
 );
@@ -209,8 +209,8 @@ Composing rels: L</likes> -> user
 __PACKAGE__->many_to_many("users", "likes", "user");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:49
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ytpJnAuAQUk60vwaoGoUgA
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-30 17:02:34
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1OJXEelKNX6gxvEbc+SDSQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -1,12 +1,12 @@
 use utf8;
-package CookBloks::Schema::Result::StepType;
+package CookBloks::Schema::RecipeDB::Result::StepType;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-CookBloks::Schema::Result::StepType
+CookBloks::Schema::RecipeDB::Result::StepType
 
 =cut
 
@@ -133,20 +133,20 @@ __PACKAGE__->set_primary_key("id");
 
 Type: has_many
 
-Related object: L<CookBloks::Schema::Result::Step>
+Related object: L<CookBloks::Schema::RecipeDB::Result::Step>
 
 =cut
 
 __PACKAGE__->has_many(
   "steps",
-  "CookBloks::Schema::Result::Step",
+  "CookBloks::Schema::RecipeDB::Result::Step",
   { "foreign.type" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:50
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TZPveqzPR49xNE+BYQWrfA
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-29 17:46:18
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RRdSkR75Fx4U/+NoMKtXNQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

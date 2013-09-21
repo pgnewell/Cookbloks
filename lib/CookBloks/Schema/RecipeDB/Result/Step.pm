@@ -1,12 +1,12 @@
 use utf8;
-package CookBloks::Schema::Result::Step;
+package CookBloks::Schema::RecipeDB::Result::Step;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-CookBloks::Schema::Result::Step
+CookBloks::Schema::RecipeDB::Result::Step
 
 =cut
 
@@ -110,13 +110,13 @@ __PACKAGE__->set_primary_key("recipe", "step");
 
 Type: might_have
 
-Related object: L<CookBloks::Schema::Result::DependentStep>
+Related object: L<CookBloks::Schema::RecipeDB::Result::DependentStep>
 
 =cut
 
 __PACKAGE__->might_have(
   "dependent_step",
-  "CookBloks::Schema::Result::DependentStep",
+  "CookBloks::Schema::RecipeDB::Result::DependentStep",
   { "foreign.recipe" => "self.recipe", "foreign.step" => "self.step" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -125,13 +125,13 @@ __PACKAGE__->might_have(
 
 Type: belongs_to
 
-Related object: L<CookBloks::Schema::Result::Recipe>
+Related object: L<CookBloks::Schema::RecipeDB::Result::Recipe>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "recipe",
-  "CookBloks::Schema::Result::Recipe",
+  "CookBloks::Schema::RecipeDB::Result::Recipe",
   { id => "recipe" },
   { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
 );
@@ -140,13 +140,13 @@ __PACKAGE__->belongs_to(
 
 Type: has_many
 
-Related object: L<CookBloks::Schema::Result::StepIngredient>
+Related object: L<CookBloks::Schema::RecipeDB::Result::StepIngredient>
 
 =cut
 
 __PACKAGE__->has_many(
   "step_ingredients",
-  "CookBloks::Schema::Result::StepIngredient",
+  "CookBloks::Schema::RecipeDB::Result::StepIngredient",
   { "foreign.recipe" => "self.recipe", "foreign.step" => "self.step" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -155,13 +155,13 @@ __PACKAGE__->has_many(
 
 Type: belongs_to
 
-Related object: L<CookBloks::Schema::Result::StepType>
+Related object: L<CookBloks::Schema::RecipeDB::Result::StepType>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "type",
-  "CookBloks::Schema::Result::StepType",
+  "CookBloks::Schema::RecipeDB::Result::StepType",
   { id => "type" },
   {
     is_deferrable => 0,
@@ -172,8 +172,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-22 11:34:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dG5a3WvvxGy95X7ulvjnWg
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-22 11:41:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dee/wsjG6uUcyKw9XPWSYQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

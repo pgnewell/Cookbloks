@@ -1,12 +1,12 @@
 use utf8;
-package CookBloks::Schema::Result::Like;
+package CookBloks::Schema::RecipeDB::Result::Like;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-CookBloks::Schema::Result::Like
+CookBloks::Schema::RecipeDB::Result::Like
 
 =cut
 
@@ -81,13 +81,13 @@ __PACKAGE__->set_primary_key("user_id", "recipe_id");
 
 Type: belongs_to
 
-Related object: L<CookBloks::Schema::Result::Recipe>
+Related object: L<CookBloks::Schema::RecipeDB::Result::Recipe>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "recipe",
-  "CookBloks::Schema::Result::Recipe",
+  "CookBloks::Schema::RecipeDB::Result::Recipe",
   { id => "recipe_id" },
   { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
 );
@@ -96,20 +96,20 @@ __PACKAGE__->belongs_to(
 
 Type: belongs_to
 
-Related object: L<CookBloks::Schema::Result::User>
+Related object: L<CookBloks::Schema::RecipeDB::Result::User>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "user",
-  "CookBloks::Schema::Result::User",
+  "CookBloks::Schema::RecipeDB::Result::User",
   { id => "user_id" },
   { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5LiWZA5qN49bjQlKjt/gJg
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-29 17:46:17
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zWuWrcQO1/fiD1QuHtbCLw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

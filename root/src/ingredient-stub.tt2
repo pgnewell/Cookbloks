@@ -1,0 +1,5 @@
+<div id='ingredient-[% p1 %]-[% p2 %]' class='ingredient'>
+	<input type='text' name='ingredient' />
+	<input type='text' name='measurement'/>
+	<input type='text' name='amount'/>
+</div>

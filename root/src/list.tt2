@@ -1,0 +1,17 @@
+<h1>Recipe</h1>
+
+[% WHILE (article = articles.next) %]
+<div class="article">
+  <h2>[% recipe.name %]</h2>
+  <p class="content">
+    [% recipe.description %]
+  </p>
+  <p class="ops">
+    Published on [% recipe.ts.strftime('%b %d, %Y') %]
+    <br />
+    <a href="[% c.action_uri('Recipe', 'edit', [recipe.id]) %]">[edit]</a>
+  </p>
+</div>
+[% END %]
+
+<a href="[% c.action_uri('Recipe', 'formula/add') %]">[ADD NEW RECIPE]</a>

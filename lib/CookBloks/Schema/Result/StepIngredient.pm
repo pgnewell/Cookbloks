@@ -1,12 +1,12 @@
 use utf8;
-package CookBloks::Schema::Result::DependentStep;
+package CookBloks::Schema::Result::StepIngredient;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-CookBloks::Schema::Result::DependentStep
+CookBloks::Schema::Result::StepIngredient
 
 =cut
 
@@ -32,19 +32,19 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
 
-=head1 TABLE: C<dependent_steps>
+=head1 TABLE: C<step_ingredients>
 
 =cut
 
-__PACKAGE__->table("dependent_steps");
+__PACKAGE__->table("step_ingredients");
 
 =head1 ACCESSORS
 
-=head2 recipe
+=head2 ingredient
 
-  data_type: 'integer'
-  is_foreign_key: 1
+  data_type: 'varchar'
   is_nullable: 0
+  size: 255
 
 =head2 step
 
@@ -52,20 +52,44 @@ __PACKAGE__->table("dependent_steps");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 dependent
+=head2 seq
+
+  data_type: 'smallint'
+  is_nullable: 0
+
+=head2 amount
+
+  data_type: 'char'
+  is_nullable: 0
+  size: 20
+
+=head2 measurement
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 255
+
+=head2 recipe
 
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
 =cut
 
 __PACKAGE__->add_columns(
-  "recipe",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "ingredient",
+  { data_type => "varchar", is_nullable => 0, size => 255 },
   "step",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "dependent",
-  { data_type => "integer", is_nullable => 0 },
+  "seq",
+  { data_type => "smallint", is_nullable => 0 },
+  "amount",
+  { data_type => "char", is_nullable => 0, size => 20 },
+  "measurement",
+  { data_type => "varchar", is_nullable => 0, size => 255 },
+  "recipe",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -76,28 +100,15 @@ __PACKAGE__->add_columns(
 
 =item * L</step>
 
+=item * L</seq>
+
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("recipe", "step");
+__PACKAGE__->set_primary_key("recipe", "step", "seq");
 
 =head1 RELATIONS
-
-=head2 recipe
-
-Type: belongs_to
-
-Related object: L<CookBloks::Schema::Result::Recipe>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "recipe",
-  "CookBloks::Schema::Result::Recipe",
-  { id => "recipe" },
-  { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
-);
 
 =head2 step
 
@@ -115,8 +126,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:blrobEFqaXyCpE9RD9A4eA
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-22 11:34:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:29JhYfr/KJbjdCgXKO9NIQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

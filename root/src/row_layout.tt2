@@ -1,0 +1,23 @@
+<!-- for AJAX -->
+<div id="recipe-stub" class="hidden">
+    <div class="r-picture"></div>
+    <div class="r-name"></div>
+    <div class="r-auth"></div>
+    <div class="r-desc"></div>
+</div>
+
+<!-- or for tt 
+<ul>
+[% WHILE (recipe = recipes.next) %]
+<li>
+<div class="recipe-item" class="hidden">
+    <div class="r-picture">[% recipe.url | html %]</div>
+    <div class="r-name">[% recipe.name | html %]</div>
+    <div class="r-auth">[% recipe.author | html %]</div>
+    <div class="r-desc">[% recipe.description | html %]</div>
+</div>
+
+</li>
+[% END %]
+</ul>
+-->

@@ -26,7 +26,7 @@ use Catalyst qw/
     Authorization::Roles
 
     Session
-    Session::Store::File
+    Session::Store::FastMmap
     Session::State::Cookie
 
     StatusMessage
@@ -54,9 +54,7 @@ __PACKAGE__->config(
 );
 
 __PACKAGE__->config({
-  'View::JSON' => {
-    expose_stash => qw(json_data)
-  }
+  'View::JSON' => { expose_stash => qw(json_data) }
 });
 
 # Configure SimpleDB Authentication

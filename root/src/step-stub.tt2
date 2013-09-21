@@ -1,0 +1,21 @@
+<div id='step-[% p1 %]' class='step step-stub'>
+	[%# this div will receive a list of ingredients concocted from the -step-stub above %]
+	<div class='ingredient-list'>
+	[%# this is one ingredient in the step. javascript will clone this and 
+		add it to the div for the list of ingredients in a step
+	%]
+		[% PROCESS ingredient-stub p2 = 1 %]
+		<button id='add-ingredient' 
+			onclick='create_ingredient_block($(".ingredient-list")); return false;'>
+			+Ingredient
+		</button>
+	</div>
+	<div class='instructions'>
+		<textarea name="instructions" 
+				onfocus="if(this.value==this.defaultValue)this.value='';" 
+				onblur="if(this.value=='')this.value=this.defaultValue;">
+			Enter instructions here
+		</textarea>
+	</div>
+</div>
+

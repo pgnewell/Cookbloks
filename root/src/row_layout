@@ -1,0 +1,7 @@
+<div id="recipe-stub" group="hidden">
+	<div class="r-picture"></div>
+	<div class="r-name"></div>
+	<div class="r-auth"></div>
+	<div class="r-desc"></div>
+</div>
+

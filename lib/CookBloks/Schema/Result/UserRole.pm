@@ -1,12 +1,12 @@
 use utf8;
-package CookBloks::Schema::Result::Like;
+package CookBloks::Schema::Result::UserRole;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-CookBloks::Schema::Result::Like
+CookBloks::Schema::Result::UserRole
 
 =cut
 
@@ -32,11 +32,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
 
-=head1 TABLE: C<likes>
+=head1 TABLE: C<user_role>
 
 =cut
 
-__PACKAGE__->table("likes");
+__PACKAGE__->table("user_role");
 
 =head1 ACCESSORS
 
@@ -46,7 +46,7 @@ __PACKAGE__->table("likes");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 recipe_id
+=head2 role_id
 
   data_type: 'integer'
   is_foreign_key: 1
@@ -57,7 +57,7 @@ __PACKAGE__->table("likes");
 __PACKAGE__->add_columns(
   "user_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "recipe_id",
+  "role_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
@@ -67,28 +67,28 @@ __PACKAGE__->add_columns(
 
 =item * L</user_id>
 
-=item * L</recipe_id>
+=item * L</role_id>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("user_id", "recipe_id");
+__PACKAGE__->set_primary_key("user_id", "role_id");
 
 =head1 RELATIONS
 
-=head2 recipe
+=head2 role
 
 Type: belongs_to
 
-Related object: L<CookBloks::Schema::Result::Recipe>
+Related object: L<CookBloks::Schema::Result::Role>
 
 =cut
 
 __PACKAGE__->belongs_to(
-  "recipe",
-  "CookBloks::Schema::Result::Recipe",
-  { id => "recipe_id" },
+  "role",
+  "CookBloks::Schema::Result::Role",
+  { id => "role_id" },
   { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
 );
 
@@ -108,8 +108,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5LiWZA5qN49bjQlKjt/gJg
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:50
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Iw6P8shmkhLUr8me9oOKKQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

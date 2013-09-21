@@ -1,12 +1,12 @@
 use utf8;
-package CookBloks::Schema::Result::User;
+package CookBloks::Schema::RecipeDB::Result::User;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-CookBloks::Schema::Result::User
+CookBloks::Schema::RecipeDB::Result::User
 
 =cut
 
@@ -139,13 +139,13 @@ __PACKAGE__->set_primary_key("id");
 
 Type: has_many
 
-Related object: L<CookBloks::Schema::Result::Like>
+Related object: L<CookBloks::Schema::RecipeDB::Result::Like>
 
 =cut
 
 __PACKAGE__->has_many(
   "likes",
-  "CookBloks::Schema::Result::Like",
+  "CookBloks::Schema::RecipeDB::Result::Like",
   { "foreign.user_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -154,13 +154,13 @@ __PACKAGE__->has_many(
 
 Type: has_many
 
-Related object: L<CookBloks::Schema::Result::Recipe>
+Related object: L<CookBloks::Schema::RecipeDB::Result::Recipe>
 
 =cut
 
 __PACKAGE__->has_many(
   "recipes_2s",
-  "CookBloks::Schema::Result::Recipe",
+  "CookBloks::Schema::RecipeDB::Result::Recipe",
   { "foreign.user_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -169,13 +169,13 @@ __PACKAGE__->has_many(
 
 Type: has_many
 
-Related object: L<CookBloks::Schema::Result::UserRole>
+Related object: L<CookBloks::Schema::RecipeDB::Result::UserRole>
 
 =cut
 
 __PACKAGE__->has_many(
   "user_roles",
-  "CookBloks::Schema::Result::UserRole",
+  "CookBloks::Schema::RecipeDB::Result::UserRole",
   { "foreign.user_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -201,9 +201,22 @@ Composing rels: L</user_roles> -> role
 __PACKAGE__->many_to_many("roles", "user_roles", "role");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:50
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9EOKlfkhWSuWn6B1L2LyIA
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-30 13:09:45
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XUOu86JuAxwZ2P3hFCrEkg
 
+# Have the 'password' column use a SHA-1 hash and 20-byte salt
+# with RFC 2307 encoding; Generate the 'check_password" method
+__PACKAGE__->add_columns(
+	'password' => {
+		passphrase       => 'rfc2307',
+		passphrase_class => 'SaltedDigest',
+		passphrase_args  => {
+			algorithm   => 'SHA-1',
+			salt_random => 20.
+		},
+		passphrase_check_method => 'check_password',
+	},
+);
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
