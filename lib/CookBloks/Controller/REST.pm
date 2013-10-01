@@ -11,6 +11,43 @@ use List::MoreUtils qw(indexes);
 use GD::Image; 
 use GD::Image::Thumbnail;
 
+our @step_fields;
+our @ing_fields;
+our @post_step_fields;
+our @post_ing_fields;
+
+sub _set_parameters {
+	my $post = shift;
+	@post_step_fields or @post_step_fields = grep {/^step-/} keys %{$post};
+	@step_fields or @step_fields = map {s/step-//;$_;} @post_step_fields;
+	@post_ing_fields or @post_ing_fields = grep {/^ing-/} keys %{$post};
+	@ing_fields or @ing_fields = map {s/ing-//;$_;} @post_ing_fields;
+}
+
+sub _do_uploads {
+	my $c = shift;
+	if ( my $upload = $c->request->upload('image') ) {
+		my $dir = "./root/images/" . $c->user->id ;
+		my $picture_url = $dir . '/' . $upload->filename;
+		-d $dir || mkdir $dir ||
+			die  "Failed to create directory $dir";
+		$upload->copy_to($picture_url) || 
+			die  "Failed to copy " . $upload->filename . " to $picture_url: $!" ;
+		my $gd = GD::Image->new( $picture_url ) ||
+			die  "failed in thumbnail $picture_url: $!" ;
+		my $png = $gd->thumbnail({w=>50, h=>50}) ||
+			die  "failed in thumbnail $picture_url: $!" ;
+		my $png_data = $png->png() ||
+			die  "cannot png file $picture_url: $!" ;
+		my $thumbnail = $picture_url;
+		$thumbnail =~ s/\.jpg$/-50x50.png/;
+		open PNG, ">$thumbnail" ||
+			die  "cannot write file $thumbnail: $!" ;
+		print PNG $png_data;
+		close PNG;
+	}
+}
+
 =head1 recipe
 
 entity for a recipe in DB
@@ -21,10 +58,8 @@ sub recipe :Local :ActionClass('REST') Args(1) {
 	my $recipe;
 	if ($id == 0) {
 		my $post_recipe = $c->request->params;
-		my @post_step_fields = grep {/^step-/} keys %{$post_recipe};
-		my @step_fields = map {s/step-//;$_;} @post_step_fields;
-		my @post_ing_fields = grep {/^ing-/} keys %{$post_recipe};
-		my @ing_fields = map {s/ing-//;$_;} @post_ing_fields;
+
+		_set_parameters $post_recipe;
 
 		my (@ings,@steps);
 		if (ref $post_recipe->{"step-step"}) {
@@ -41,38 +76,11 @@ sub recipe :Local :ActionClass('REST') Args(1) {
 			@ings = ({map {$_, $post_recipe->{"ing-$_"}} @ing_fields});
 		}
 
-		my $name = $post_recipe->{name};
-		$recipe = $c->model('RecipeDB::Recipe')->find( 
-			{ name => $name },
-			{result_class => 'DBIx::Class::ResultClass::HashRefInflator'} 
-		);
 		if ($recipe) {
 		} else {
-			my $picture_url;
-			if ( my $upload = $c->request->upload('image') ) {
-				my $dir = "./root/images/" . $c->user->id ;
-				$picture_url = $dir . '/' . $upload->filename;
-				-d $dir || mkdir $dir ||
-					$self->status_bad_request({ message => "Failed to create directory $dir"});
-				$upload->copy_to($picture_url) || 
-					$self->status_bad_request({ 
-						message => "Failed to copy " . $upload->filename . " to $picture_url: $!"
-					});
-				my $gd = GD::Image->new( $picture_url ) ||
-					$self->status_bad_request({ message => "failed in thumbnail $picture_url: $!" });
-				my $png = $gd->thumbnail({w=>50, h=>50}) ||
-					$self->status_bad_request({ message => "failed in thumbnail $picture_url: $!" });
-				my $png_data = $png->png() ||
-					$self->status_bad_request({ message => "cannot png file $picture_url: $!" });
-				my $thumbnail = $picture_url;
-				$thumbnail =~ s/\.jpg$/-50x50.png/;
-				open PNG, ">$thumbnail" ||
-					$self->status_bad_request({ message => "cannot write file $thumbnail: $!" });
-				print PNG $png_data;
-				close PNG;
-			}
+			_do_uploads $c;
 			$recipe = $c->model("RecipeDB::Recipe")->create( {
-				name => $name, 
+				name => $post_recipe->{name},
 				description => $post_recipe->{description}, 
 				user_id => $c->user->id,
 			}) or $self->status_bad_request( { message => "failed when saving recipe: $!" } );
@@ -87,7 +95,6 @@ sub recipe :Local :ActionClass('REST') Args(1) {
 	} else {
 		$recipe = $c->model('RecipeDB::Recipe')->find( 
 			{ id => $id },
-			#{result_class => 'DBIx::Class::ResultClass::HashRefInflator'} 
 		);
 	}
 	$c->stash(id => $recipe->id);
@@ -112,14 +119,14 @@ response to GET request
 =cut
 sub recipe_GET {
 	my ($self, $c) = @_;
-	my $rs = $c->model('RecipeDB')->resultset('Recipe')->search({id=>$c->stash->{id}});
+	my $recipe = $c->model('RecipeDB')->resultset('Recipe')->find({id=>$c->stash->{id}});
 	my @list = map { 
 		my $uri = $_->picture_url; 
 		$uri =~ s/ /%20/g;
 		{
 			name => $_->name,
 			description => $_->description,
-			picture_url => "<img src='$uri' />",
+			picture_url => $uri,
 		    author => $_->user->first_name . " " . $_->user->last_name,
 			steps => [ map { 
 				{ 
@@ -138,8 +145,8 @@ sub recipe_GET {
 				}
 			} $_->steps ],
 		}
-	} $rs->all();
-	$self->status_ok($c, entity => { rows => \@list });
+	} ($recipe);
+	$self->status_ok($c, entity => $list[0] );
 }
 
 =head1 recipe_POST

@@ -104,9 +104,12 @@ sub dump :Chained('formula') :PathPart('dump') :Args(0) {
 				template => 'utils/dump.tt2');
 }
 
-sub edit : Chained('formula') {
-	my ($self, $c) = @_;
+sub edit : Local Args(1) {
+	my ($self, $c, $id) = @_;
+	$c->stash->{id} = $id;
+	$c->stash->{action} = "recipe-edit";
 	$c->stash(template => 'recipe-form.tt2');
+	$c->detach($c->view("HTML"));
 }
  
 sub add : Chained('formulas') {

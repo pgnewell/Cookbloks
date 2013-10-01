@@ -1,13 +1,16 @@
 <div id='step-stub' class='step hideinput'>
+	[%# this is the recipe step. javascript will clone this and 
+		add it to the div for the list of steps in the recipe %]
 	<input type='hidden' name='step-step' />
 	<input type='text' name='step-name' class='start' />
 	<input type='text' name='ingredients' />
 	<div class='ingredient-list'>
-		<button type='button' class='add-ingredient' 
-			onclick='create_ingredient_block($(this)); return false;'>
-			+Ingredient
-		</button>
 	</div>
+	<button type='button' 
+		class='add-ingredient' 
+		onclick='create_ingredient_block($(this).prev()); return false;'>
+		+Ingredient 
+	</button>
 	<textarea name='step-instructions' class='instructions' 
 			onfocus="if(this.value==this.defaultValue)this.value='';" 
 			onblur="if(this.value=='')this.value=this.defaultValue;">
@@ -23,7 +26,7 @@
 	<input type='text' name='ing-ingredient' class='start' />
 	<input type='text' name='ing-measurement'/>
 	<input type='text' name='ing-amount'/>
-	<button name='ing-remove' onclick='$(this).parent().remove();'>-</button>
+	<button type='button' onclick='$(this).parent().remove();'> - </button>
 </div>
 
 <form id="recipe-form" action="[% c.uri_for('/rest/recipe/0') %]" method="POST" enctype="multipart/form-data">
@@ -33,18 +36,14 @@
 			onblur="if(this.value=='')this.value=this.defaultValue;">
 		Recipe description
 	</textarea>
-    <input type='file' name='image'/>
+    <input type='file' name='image' onchange="readURL(this,$('#picture'));"/>
+    <img id="picture" src="#" alt="your image" />
 	<div id='step-grid'>
 	[%# this div will receive a list of steps concocted from the step-stub above %]
 		<div id='step-list'>
-			[%# this is the recipe step. javascript will clone this and 
-				add it to the div for the list of steps in the recipe
-			%]
-			 
 		</div>
-		<button type='button' id='add-step' onclick='create_step_block($("#step-list")); return false;'>
-			+Step
-		</button>
+		<button type='button' 
+			onclick='create_step_block($(this).prev()); return false;'>+Step</button>
 	</div>
     <input type='submit' value='Save Recipe'/>
 </form>
