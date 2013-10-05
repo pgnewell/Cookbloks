@@ -7,7 +7,6 @@ __PACKAGE__->config(
 	default => 'application/json',
 );
 
-use List::MoreUtils qw(indexes);
 use GD::Image; 
 use GD::Image::Thumbnail;
 
@@ -48,6 +47,34 @@ sub _do_uploads {
 	}
 }
 
+sub _deserialize_from_params {
+	my $c = shift;
+	my $post_recipe = $c->request->params;
+	my %recipe;
+	_set_parameters $post_recipe;
+
+	my (@ings,@steps);
+	# disambiguate between array and single row step
+	if (ref $post_recipe->{"step-step"}) {
+		push @steps, {map {$_, shift $post_recipe->{"step-$_"}} @step_fields}
+			while (@{$post_recipe->{"step-$post_step_fields[0]"}});
+	} else {
+		@steps = ({map {$_, $post_recipe->{"step-$_"}} @step_fields});
+	}
+
+	# same for ingredients 
+	if (ref $post_recipe->{"ing-ingredient"}) {
+		push @ings, {map {$_, shift $post_recipe->{"ing-$_"}} @ing_fields}
+			while (@{$post_recipe->{"ing-$post_ing_fields[0]"}});
+	} else {
+		@ings = ({map {$_, $post_recipe->{"ing-$_"}} @ing_fields});
+	}
+	@recipe{qw/name description/} = @$post_recipe{qw/name description/};
+	$recipe{user_id} = $c->user->id;
+	$recipe{steps} = \@steps;
+	$recipe{ingredients} = \@ings;
+	return \%recipe;
+}
 =head1 recipe
 
 entity for a recipe in DB
@@ -56,48 +83,31 @@ entity for a recipe in DB
 sub recipe :Local :ActionClass('REST') Args(1) {
 	my ($self, $c, $id) = @_;
 	my $recipe;
+	my $saved_recipe;
 	if ($id == 0) {
-		my $post_recipe = $c->request->params;
+		my $recipe = _deserialize_from_params( $c );
 
-		_set_parameters $post_recipe;
-
-		my (@ings,@steps);
-		if (ref $post_recipe->{"step-step"}) {
-			push @steps, {map {$_, shift $post_recipe->{"step-$_"}} @step_fields}
-				while (@{$post_recipe->{"step-$post_step_fields[0]"}});
-		} else {
-			@steps = ({map {$_, $post_recipe->{"step-$_"}} @step_fields});
-		}
-
-		if (ref $post_recipe->{"ing-ingredient"}) {
-			push @ings, {map {$_, shift $post_recipe->{"ing-$_"}} @ing_fields}
-				while (@{$post_recipe->{"ing-$post_ing_fields[0]"}});
-		} else {
-			@ings = ({map {$_, $post_recipe->{"ing-$_"}} @ing_fields});
-		}
-
-		if ($recipe) {
-		} else {
-			_do_uploads $c;
-			$recipe = $c->model("RecipeDB::Recipe")->create( {
-				name => $post_recipe->{name},
-				description => $post_recipe->{description}, 
-				user_id => $c->user->id,
-			}) or $self->status_bad_request( { message => "failed when saving recipe: $!" } );
-			for my $step (@steps) {
-				my $created = $recipe->add_to_steps($step);
-				foreach my $i (indexes {$_->{step} == $step->{step}} (@ings)) {
-					$created->add_to_step_ingredients($ings[$i]);
-				}
+		_do_uploads $c;
+		$saved_recipe = $c->model("RecipeDB::Recipe")->create( {
+			name => $recipe->{name},
+			description => $recipe->{description}, 
+			user_id => $recipe->{user_id},
+		}) or $self->status_bad_request( { message => "failed when saving recipe: $!" } );
+		foreach my $step (@{$recipe->{steps}}) {
+			my $depend = delete $step->{dependent};
+			my $created = $saved_recipe->add_to_steps($step);
+			my $dependency = $created->create_related('dependent_step', {dependent => $depend} ) if ($depend);
+			foreach my $i (grep {$_->{step} == $step->{step}} (@{$recipe->{ingredients}})) {
+				$created->add_to_step_ingredients($i);
 			}
-			#$DB::single = 2;
 		}
+		#$DB::single = 2;
 	} else {
 		$recipe = $c->model('RecipeDB::Recipe')->find( 
 			{ id => $id },
 		);
 	}
-	$c->stash(id => $recipe->id);
+	$c->stash(id => $saved_recipe->id);
 }
 
 =head1 recipe_list

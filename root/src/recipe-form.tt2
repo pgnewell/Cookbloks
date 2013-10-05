@@ -16,8 +16,11 @@
 			onblur="if(this.value=='')this.value=this.defaultValue;">
 		Enter instructions here
 	</textarea>
-	Dependency:
-	<p class='dependency' ></p>
+	<div class='dependency ui-widget-content' >
+		<p>Depends on</p>
+		<p name='dependency'> </p>
+		<input type='hidden' name='step-dependent' />
+	</div>
 </div>
 
 <div id='ingredient-stub' class='ingredient hideinput'>
