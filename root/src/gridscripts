@@ -1,8 +1,8 @@
 
-<script src="[% c.uri_for('/static/js/jquery-1.9.1.js') %]" type="text/javascript"></script>
-<script src="[% c.uri_for('/static/js/jquery-ui-1.9.1.js') %]" type="text/javascript"></script>
-<script src="[% c.uri_for('/static/js/i18n/grid.locale-en.js') %]" type="text/javascript"></script>
-<script src="[% c.uri_for('/static/js/jquery.form.min.js') %]" type="text/javascript"></script>
+<script src="[% c.uri_for('/site/js/jquery-1.9.1.js') %]" type="text/javascript"></script>
+<script src="[% c.uri_for('/site/js/jquery-ui-1.9.1.js') %]" type="text/javascript"></script>
+<script src="[% c.uri_for('/site/js/i18n/grid.locale-en.js') %]" type="text/javascript"></script>
+<script src="[% c.uri_for('/site/js/jquery.form.min.js') %]" type="text/javascript"></script>
 <script src="[% c.uri_for('/static/js/functions.js') %]" type="text/javascript"></script>
 <script src="[% c.uri_for('/static/js/basis.js') %]" type="text/javascript"></script>
 <script src="[% c.uri_for('/static/js/ttsite.js') %]" type="text/javascript"></script>

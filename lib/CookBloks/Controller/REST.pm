@@ -15,6 +15,9 @@ our @ing_fields;
 our @post_step_fields;
 our @post_ing_fields;
 
+# multiple value fields in POST are prefixed with step- and ing- 
+# for steps and ingredients
+# remove prefix for use in the database
 sub _set_parameters {
 	my $post = shift;
 	@post_step_fields or @post_step_fields = grep {/^step-/} keys %{$post};
@@ -23,7 +26,8 @@ sub _set_parameters {
 	@ing_fields or @ing_fields = map {s/ing-//;$_;} @post_ing_fields;
 }
 
-sub _do_uploads {
+# deal the uploaded picture. assumes just one that's image
+sub _do_image_uploads {
 	my $c = shift;
 	if ( my $upload = $c->request->upload('image') ) {
 		my $dir = "./root/images/" . $c->user->id ;
@@ -47,14 +51,20 @@ sub _do_uploads {
 	}
 }
 
+# get the recipe from the POSTed params put it in a resultset objcet
+# return undef if no name
 sub _deserialize_from_params {
 	my $c = shift;
 	my $post_recipe = $c->request->params;
-	my %recipe;
-	_set_parameters $post_recipe;
+	return unless $post_recipe->{name};
+	_do_image_uploads $c;
 
+	my %recipe = map {$_ => $post_recipe->{$_}} qw/name description/;
+	$recipe{user_id} = $c->user->id;
+
+	_set_parameters $post_recipe;
 	my (@ings,@steps);
-	# disambiguate between array and single row step
+	# disambiguate between array and single row step from POST variables
 	if (ref $post_recipe->{"step-step"}) {
 		push @steps, {map {$_, shift $post_recipe->{"step-$_"}} @step_fields}
 			while (@{$post_recipe->{"step-$post_step_fields[0]"}});
@@ -69,45 +79,41 @@ sub _deserialize_from_params {
 	} else {
 		@ings = ({map {$_, $post_recipe->{"ing-$_"}} @ing_fields});
 	}
-	@recipe{qw/name description/} = @$post_recipe{qw/name description/};
-	$recipe{user_id} = $c->user->id;
+
+	# create recipe object and assemble related entities for insertion
+	#my $recipe = $c->model("RecipeDB")->resultset("Recipe")->new( \%recipe );
+	foreach my $step (@steps) {
+		$step->{dependent_steps_recipes_depended_upon} = [];
+		if (my $depend = delete $step->{depended_upon}) {
+			unshift $step->{dependent_steps_recipes_depended_upon}, $depend;
+		}
+		$step->{step_ingredients} = [
+			grep {$_->{step} 
+					&& $_->{step} == $step->{step} 
+					&& delete $_->{step}} 
+				(@ings)
+		];
+	}
 	$recipe{steps} = \@steps;
-	$recipe{ingredients} = \@ings;
-	return \%recipe;
+	my $recipe = $c->model("RecipeDB")->resultset("Recipe")->new( \%recipe );
+
+	return $recipe;
 }
+
 =head1 recipe
 
 entity for a recipe in DB
 
 =cut
-sub recipe :Local :ActionClass('REST') Args(1) {
+sub recipe :Local ActionClass('REST') Args(1) {
 	my ($self, $c, $id) = @_;
-	my $recipe;
 	my $saved_recipe;
-	if ($id == 0) {
-		my $recipe = _deserialize_from_params( $c );
-
-		_do_uploads $c;
-		$saved_recipe = $c->model("RecipeDB::Recipe")->create( {
-			name => $recipe->{name},
-			description => $recipe->{description}, 
-			user_id => $recipe->{user_id},
-		}) or $self->status_bad_request( { message => "failed when saving recipe: $!" } );
-		foreach my $step (@{$recipe->{steps}}) {
-			my $depend = delete $step->{dependent};
-			my $created = $saved_recipe->add_to_steps($step);
-			my $dependency = $created->create_related('dependent_step', {dependent => $depend} ) if ($depend);
-			foreach my $i (grep {$_->{step} == $step->{step}} (@{$recipe->{ingredients}})) {
-				$created->add_to_step_ingredients($i);
-			}
-		}
-		#$DB::single = 2;
-	} else {
-		$recipe = $c->model('RecipeDB::Recipe')->find( 
-			{ id => $id },
-		);
+	if ( defined $id && $id > 0) {
+		$saved_recipe = $c->model('RecipeDB::Recipe')->find( { id => $id },);
 	}
-	$c->stash(id => $saved_recipe->id);
+	my $recipe = _deserialize_from_params( $c ) || $saved_recipe;
+
+	$c->stash(id => $id, recipe => $recipe);
 }
 
 =head1 recipe_list
@@ -115,6 +121,7 @@ sub recipe :Local :ActionClass('REST') Args(1) {
 a recipe_list
 
 =cut
+
 sub recipe_list :Local :ActionClass('REST') Args(2) {
 	my ($self, $c, $page, $lines) = @_;
 	$page ||= 1;
@@ -129,7 +136,7 @@ response to GET request
 =cut
 sub recipe_GET {
 	my ($self, $c) = @_;
-	my $recipe = $c->model('RecipeDB')->resultset('Recipe')->find({id=>$c->stash->{id}});
+	my $recipe = $c->stash->{recipe};
 	my @list = map { 
 		my $uri = $_->picture_url; 
 		$uri =~ s/ /%20/g;
@@ -138,41 +145,76 @@ sub recipe_GET {
 			description => $_->description,
 			picture_url => $uri,
 		    author => $_->user->first_name . " " . $_->user->last_name,
-			steps => [ map { 
-				{ 
-					step => $_->step, 
-					name => $_->name, 
-					instructions => $_->instructions, 
-					type => $_->type, 
-					ingredients => [ map {
-						{
-							seq => $_->seq,
-							ingredient => $_->ingredient,
-							measurement => $_->measurement,
-							amount => $_->amount,
-						}
-					} $_->step_ingredients ],
-				}
-			} $_->steps ],
+			steps => [ map { { 
+				step => $_->step, 
+				name => $_->name, 
+				instructions => $_->instructions, 
+				type => $_->type, 
+				ingredients => [ map { {
+					seq => $_->seq,
+					ingredient => $_->ingredient,
+					measurement => $_->measurement,
+					amount => $_->amount,
+				} } $_->step_ingredients ],
+			} } $_->steps ],
 		}
 	} ($recipe);
 	$self->status_ok($c, entity => $list[0] );
 }
 
+=head1 filter_recipe
+
+translates a resultset to a readable object
+
+=cut
+
+sub filter_recipe {
+	my $recipe = shift;
+	my @list = map {
+        my $uri = $_->picture_url;
+        $uri =~ s/ /%20/g;
+        {
+            name => $_->name,
+            description => $_->description,
+            picture_url => $uri,
+            author => $_->user->first_name . " " . $_->user->last_name,
+            steps => [ map { {
+                step => $_->step,
+                name => $_->name,
+                instructions => $_->instructions,
+                type => $_->type,
+                ingredients => [ map { {
+                    seq => $_->seq,
+                    ingredient => $_->ingredient,
+                    measurement => $_->measurement,
+                    amount => $_->amount,
+                } } $_->step_ingredients ],
+            } } $_->steps ],
+        }
+    } ($recipe);
+	return $list[0];
+}
+
 =head1 recipe_POST
 
-response to POST request
+handles a POST request
+A post should be used to create a new entity, i.e. one that yet has no
+id or URI address (which would be [domain]/rest/recipe/[id])
 
 =cut
 sub recipe_POST {
 	my ($self, $c) = @_;
-	my $id = $c->stash->{id};
-	$self->status_ok($c, entity => {id => $id});
+	my $recipe = $c->stash->{recipe};
+	$recipe->insert();
+	$self->status_ok($c, entity => {id => $recipe->id});
 }
 
 =head1 recipe_PUT
 
-response to PUT request
+handles a PUT request
+A PUT should work with an existing URI, so an id should be available
+and generally an update is done or a delete/insert with primary key 
+specified
 
 =cut
 sub recipe_PUT {
@@ -201,6 +243,7 @@ sub recipe_list_GET {
 		my $uri = $_->picture_url; 
 		$uri =~ s/ /%20/g;
 		{
+			id => $_->id,
 			name => $_->name,
 			description => $_->description,
 			picture_url => "<img src='$uri' />",
@@ -209,5 +252,61 @@ sub recipe_list_GET {
 	} $rs->all();
 	$self->status_ok($c, entity => { rows => \@list });
 }
+
+=head1 recipe_flow 
+
+a hierarchical list of steps of recipes
+
+=cut
+
+sub recipe_flow :Local :ActionClass('REST') Args(1) {
+	my ($self, $c, $id) = @_;
+	$c->stash( id => $id );
+
+}
+
+sub get_dependent_steps {
+	[ 
+		map { 
+			$_ && { # The && is required because $dependants gives an array of one undef when empty
+				step => $_->step->step, 
+				name => $_->step->name, 
+				instructions => $_->step->instructions, 
+				type => $_->step->type && $_->step->type->name || "(none)", 
+				ingredients => [ map { {
+					seq => $_->seq,
+					ingredient => $_->ingredient,
+					measurement => $_->measurement,
+					amount => $_->amount,
+				} } $_->step->step_ingredients ],
+				dependent_steps => get_dependent_steps( $_->step->dependants ),
+			} 
+		} @_
+	];
+}
+
+
+=head1 recipe_flow_GET
+
+a hierarchical list of steps of recipes
+
+=cut
+
+sub recipe_flow_GET {
+	my ($self, $c) = @_;
+
+	my $id = $c->stash->{id};
+	my $recipe = $c->model('RecipeDB')->resultset('Recipe')->find( {id => $id} );
+	my %recipe = ( 
+		id => $recipe->id,
+		name => $recipe->name,
+		description => $recipe->description,
+		author => $recipe->user->first_name . " " . $recipe->user->last_name,
+	);
+	$recipe{steps} = get_dependent_steps( $recipe->dependants );
+
+	$self->status_ok($c, entity => { recipe => \%recipe });
+}
+
 
 1;

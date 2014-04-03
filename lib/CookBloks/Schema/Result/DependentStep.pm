@@ -26,11 +26,13 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<dependent_steps>
 
@@ -52,9 +54,10 @@ __PACKAGE__->table("dependent_steps");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 dependent
+=head2 depended_upon
 
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
 =cut
@@ -64,8 +67,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "step",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "dependent",
-  { data_type => "integer", is_nullable => 0 },
+  "depended_upon",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -84,22 +87,7 @@ __PACKAGE__->set_primary_key("recipe", "step");
 
 =head1 RELATIONS
 
-=head2 recipe
-
-Type: belongs_to
-
-Related object: L<CookBloks::Schema::Result::Recipe>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "recipe",
-  "CookBloks::Schema::Result::Recipe",
-  { id => "recipe" },
-  { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
-);
-
-=head2 step
+=head2 step_recipe_depended_upon
 
 Type: belongs_to
 
@@ -108,15 +96,30 @@ Related object: L<CookBloks::Schema::Result::Step>
 =cut
 
 __PACKAGE__->belongs_to(
-  "step",
+  "step_recipe_depended_upon",
+  "CookBloks::Schema::Result::Step",
+  { recipe => "recipe", step => "depended_upon" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+);
+
+=head2 step_recipe_step
+
+Type: belongs_to
+
+Related object: L<CookBloks::Schema::Result::Step>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "step_recipe_step",
   "CookBloks::Schema::Result::Step",
   { recipe => "recipe", step => "step" },
   { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:blrobEFqaXyCpE9RD9A4eA
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-12-05 16:41:01
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/899u7ukP3xh1B7/bPtaxQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

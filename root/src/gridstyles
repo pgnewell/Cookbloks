@@ -1,6 +1,6 @@
 
-<link rel="stylesheet" type="text/css" media="screen" href="[% c.uri_for('/static/css/cupertino/jquery-ui-1.10.0.custom.css') %]" />
-<link rel="stylesheet" type="text/css" media="screen" href="[% c.uri_for('/static/css/ui.jqgrid.css') %]" />
+<link rel="stylesheet" type="text/css" media="screen" href="[% c.uri_for('/site/css/cupertino/jquery-ui-1.10.0.custom.css') %]" />
+<link rel="stylesheet" type="text/css" media="screen" href="[% c.uri_for('/site/css/ui.jqgrid.css') %]" />
 
 <style type="text/css">
 html, body {

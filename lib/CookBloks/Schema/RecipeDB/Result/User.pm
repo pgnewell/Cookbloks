@@ -26,11 +26,13 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<users>
 
@@ -201,8 +203,8 @@ Composing rels: L</user_roles> -> role
 __PACKAGE__->many_to_many("roles", "user_roles", "role");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-30 13:09:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XUOu86JuAxwZ2P3hFCrEkg
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-12-05 16:44:06
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:AKAq6eA5m5ug2l0kS5+ncA
 
 # Have the 'password' column use a SHA-1 hash and 20-byte salt
 # with RFC 2307 encoding; Generate the 'check_password" method

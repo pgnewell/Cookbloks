@@ -1,2 +1,5 @@
 <div id='list'></div> 
-<div id='pager'></div> 
+<div id='pager'>
+	<button onclick='--page_number; fill_block_with_recipes();'>Prev</button>
+	<button onclick='++page_number; fill_block_with_recipes();'>Next</button>
+</div> 

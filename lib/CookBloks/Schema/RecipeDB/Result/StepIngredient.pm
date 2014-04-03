@@ -26,11 +26,13 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<step_ingredients>
 
@@ -59,7 +61,7 @@ __PACKAGE__->table("step_ingredients");
 
 =head2 amount
 
-  data_type: 'char'
+  data_type: 'varchar'
   is_nullable: 0
   size: 20
 
@@ -85,7 +87,7 @@ __PACKAGE__->add_columns(
   "seq",
   { data_type => "smallint", is_nullable => 0 },
   "amount",
-  { data_type => "char", is_nullable => 0, size => 20 },
+  { data_type => "varchar", is_nullable => 0, size => 20 },
   "measurement",
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "recipe",
@@ -126,8 +128,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-22 11:41:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eg0TqpKzVIRmw0bmtLKPqQ
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-12-05 16:44:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Eq9zDZvNdnYFTg2t0OU5iA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

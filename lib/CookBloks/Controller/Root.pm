@@ -30,6 +30,7 @@ sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
 	$c->stash->{recipes} = $c->model('RecipeDB::Recipe')->search({});
+	$c->stash->{action} = "recipe-list";
 	$c->detach($c->view("HTML"));
 
     #$c->response->body( $c->view('HTML'));
@@ -91,13 +92,13 @@ sub auto :Private {
 
 =head2 jemplate Return the jemplates.
 
-=cut
-
 sub jemplate : Global {
 	my($self, $c) = @_;
 	$c->forward('View::Jemplate');
 
 }
+
+=cut
 
 =head2 end
 

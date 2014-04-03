@@ -26,11 +26,13 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<role>
 
@@ -99,8 +101,8 @@ Composing rels: L</user_roles> -> user
 __PACKAGE__->many_to_many("users", "user_roles", "user");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-30 13:09:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TyoMIYkNR1P/RQ6aposrDg
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-12-05 16:44:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:c/IdpTC9x/hX2hciaEIyIw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

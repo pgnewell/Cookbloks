@@ -3,15 +3,15 @@ package CookBloks::Model::RecipeDB;
 use strict;
 use base 'Catalyst::Model::DBIC::Schema';
 
-__PACKAGE__->config(
-    schema_class => 'CookBloks::Schema::RecipeDB',
-    
-    connect_info => {
-        dsn => 'dbi:Pg:dbname=recipedb;host=pgn.no-ip.org',
-        user => 'catappuser',
-        password => 'catalyst',
-    }
-);
+#__PACKAGE__->config(
+#    schema_class => 'CookBloks::Schema::RecipeDB',
+#    
+#    connect_info => {
+#        dsn => 'dbi:Pg:dbname=recipedb;host=pgn.no-ip.org',
+#        user => 'catappuser',
+#        password => 'catalyst',
+#    }
+#);
 
 =head1 NAME
 

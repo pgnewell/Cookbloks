@@ -5,6 +5,7 @@ BEGIN {
 }
 
 use Catalyst::ScriptRunner;
+use diagnostics;
 Catalyst::ScriptRunner->run('CookBloks', 'Server');
 
 1;

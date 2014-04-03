@@ -26,11 +26,13 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<ingredients>
 
@@ -42,13 +44,12 @@ __PACKAGE__->table("ingredients");
 
 =head2 name
 
-  data_type: 'char'
+  data_type: 'citext'
   is_nullable: 0
-  size: 255
 
 =head2 preferred_measure
 
-  data_type: 'char'
+  data_type: 'varchar'
   is_nullable: 1
   size: 255
 
@@ -56,14 +57,12 @@ __PACKAGE__->table("ingredients");
 
 __PACKAGE__->add_columns(
   "name",
-  { data_type => "char", is_nullable => 0, size => 255 },
+  { data_type => "citext", is_nullable => 0 },
   "preferred_measure",
-  { data_type => "char", is_nullable => 1, size => 255 },
+  { data_type => "varchar", is_nullable => 1, size => 255 },
 );
 
-=head1 UNIQUE CONSTRAINTS
-
-=head2 C<ingredients_name_key>
+=head1 PRIMARY KEY
 
 =over 4
 
@@ -73,11 +72,11 @@ __PACKAGE__->add_columns(
 
 =cut
 
-__PACKAGE__->add_unique_constraint("ingredients_name_key", ["name"]);
+__PACKAGE__->set_primary_key("name");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:k4sw6Mu1CG9rZfKlUdnkPA
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-12-04 16:17:13
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:EUpdYuxUkJxmDzsPa+/m1w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

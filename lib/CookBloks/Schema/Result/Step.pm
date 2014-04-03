@@ -26,11 +26,13 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<steps>
 
@@ -59,10 +61,9 @@ __PACKAGE__->table("steps");
 
 =head2 instructions
 
-  data_type: 'varchar'
+  data_type: 'text'
   default_value: null
   is_nullable: 1
-  size: 255
 
 =head2 name
 
@@ -80,12 +81,7 @@ __PACKAGE__->add_columns(
   "type",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
   "instructions",
-  {
-    data_type => "varchar",
-    default_value => \"null",
-    is_nullable => 1,
-    size => 255,
-  },
+  { data_type => "text", default_value => \"null", is_nullable => 1 },
   "name",
   { data_type => "varchar", is_nullable => 1, size => 255 },
 );
@@ -106,7 +102,7 @@ __PACKAGE__->set_primary_key("recipe", "step");
 
 =head1 RELATIONS
 
-=head2 dependent_step
+=head2 dependent_steps_recipe_step
 
 Type: might_have
 
@@ -115,9 +111,27 @@ Related object: L<CookBloks::Schema::Result::DependentStep>
 =cut
 
 __PACKAGE__->might_have(
-  "dependent_step",
+  "dependent_steps_recipe_step",
   "CookBloks::Schema::Result::DependentStep",
   { "foreign.recipe" => "self.recipe", "foreign.step" => "self.step" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 dependent_steps_recipes_depended_upon
+
+Type: has_many
+
+Related object: L<CookBloks::Schema::Result::DependentStep>
+
+=cut
+
+__PACKAGE__->has_many(
+  "dependent_steps_recipes_depended_upon",
+  "CookBloks::Schema::Result::DependentStep",
+  {
+    "foreign.depended_upon" => "self.step",
+    "foreign.recipe"        => "self.recipe",
+  },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
@@ -172,9 +186,15 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-22 11:34:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dG5a3WvvxGy95X7ulvjnWg
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-12-05 16:41:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ncRkLA7OPg1UzqdUQxI0dg
 
+__PACKAGE__->might_have(
+  "dependants",
+  "CookBloks::Schema::Result::RecipeFlow",
+  { "foreign.recipe" => "self.recipe", "foreign.d_step" => "self.step" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

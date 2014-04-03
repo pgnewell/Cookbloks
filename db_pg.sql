@@ -34,8 +34,8 @@ SET default_with_oids = false;
 
 CREATE TABLE dependent_steps (
     recipe integer NOT NULL,
-    dependant integer NOT NULL,
-    dependent integer NOT NULL
+    step  integer NOT NULL,
+    dependant integer NOT NULL
 );
 
 

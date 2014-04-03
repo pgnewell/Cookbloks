@@ -1,23 +1,23 @@
 <!-- for AJAX -->
-<div id="recipe-stub" class="hidden">
-    <div class="r-picture"></div>
-    <div class="r-name"></div>
-    <div class="r-auth"></div>
-    <div class="r-desc"></div>
+<script id="recipe-stub" type="text/template">
+	<div class="r-list-box">
+		<div class="r-picture"></div>
+		<div class="r-name"></div>
+		<div class="r-auth"></div>
+		<div class="r-desc"></div>
+		<div class="clear"></div>
+	</div>
+</script>
+
+<script id='blok-stub' type="text/template">
+	<td>
+		<button type='button' onclick='$(this).parent().addClass("recipe-done").removeClass("recipe-focus");'>
+			Done
+		</button>
+	</td>
+</script>
+
+<div id='recipe-execution' style='display: none;'>
+	<button type='button' onclick='$(this).parent().hide();$("#list").removeClass("hidden");'>x</button>
 </div>
 
-<!-- or for tt 
-<ul>
-[% WHILE (recipe = recipes.next) %]
-<li>
-<div class="recipe-item" class="hidden">
-    <div class="r-picture">[% recipe.url | html %]</div>
-    <div class="r-name">[% recipe.name | html %]</div>
-    <div class="r-auth">[% recipe.author | html %]</div>
-    <div class="r-desc">[% recipe.description | html %]</div>
-</div>
-
-</li>
-[% END %]
-</ul>
--->

@@ -26,11 +26,13 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn","Helper::Row::ToJSON");
 
 =head1 TABLE: C<step_types>
 
@@ -145,9 +147,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-29 17:46:18
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RRdSkR75Fx4U/+NoMKtXNQ
-
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-12-05 16:44:06
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:cVaekpcTXrbR1/k/ZLU9aQ
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

@@ -26,11 +26,13 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<dependent_steps>
 
@@ -52,9 +54,10 @@ __PACKAGE__->table("dependent_steps");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 dependent
+=head2 depended_upon
 
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
 =cut
@@ -64,8 +67,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "step",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "dependent",
-  { data_type => "integer", is_nullable => 0 },
+  "depended_upon",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -84,21 +87,6 @@ __PACKAGE__->set_primary_key("recipe", "step");
 
 =head1 RELATIONS
 
-=head2 recipe
-
-Type: belongs_to
-
-Related object: L<CookBloks::Schema::RecipeDB::Result::Recipe>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "recipe",
-  "CookBloks::Schema::RecipeDB::Result::Recipe",
-  { id => "recipe" },
-  { is_deferrable => 0, on_delete => "CASCADE,", on_update => "CASCADE," },
-);
-
 =head2 step
 
 Type: belongs_to
@@ -114,9 +102,24 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
+=head2 step_recipe_depended_upon
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-05-29 17:46:17
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TDOPFXTUrjL0HrIxjoK60g
+Type: belongs_to
+
+Related object: L<CookBloks::Schema::RecipeDB::Result::Step>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "step_recipe_depended_upon",
+  "CookBloks::Schema::RecipeDB::Result::Step",
+  { recipe => "recipe", step => "depended_upon" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-12-05 16:44:03
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:mFPaW/MLtjnphcwKD++CUg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

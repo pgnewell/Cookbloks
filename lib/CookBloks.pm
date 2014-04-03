@@ -25,9 +25,9 @@ use Catalyst qw/
     Authentication
     Authorization::Roles
 
-    Session
-    Session::Store::FastMmap
-    Session::State::Cookie
+	Session
+	Session::Store::FastMmap
+	Session::State::Cookie
 
     StatusMessage
 /;
@@ -71,10 +71,10 @@ __PACKAGE__->config(
 # stuff for the Jemplate even thought I don't know if I want this yet
 
 __PACKAGE__->config->{cache}{expires} = 43200;
-__PACKAGE__->config->{cache}{backends}{jemplate}{store} = 'FastMmap';
-__PACKAGE__->config->{'View::Jemplate'}{jemplate_dir} = 
-	__PACKAGE__->path_to('root', 'jemplate');
-__PACKAGE__->config->{'View::Jemplate'}{jemplate_ext} = '.tt2';
+#__PACKAGE__->config->{cache}{backends}{jemplate}{store} = 'FastMmap';
+#__PACKAGE__->config->{'View::Jemplate'}{jemplate_dir} = 
+#	__PACKAGE__->path_to('root', 'jemplate');
+#__PACKAGE__->config->{'View::Jemplate'}{jemplate_ext} = '.tt2';
 
 # Start the application
 __PACKAGE__->setup();

@@ -23,6 +23,8 @@ Catalyst Controller.
 
 =cut
 
+use List::Util qw/ sum max /;
+
 sub index :Path :Args(0) {
 	my ( $self, $c ) = @_;
 
@@ -170,6 +172,55 @@ sub not_found : Local {
 	$c->response->status(404);
 	$c->stash->{error_msg} = "Recipe not found!";
 	$c->detach('list');
+}
+
+sub build_step_block {
+	my @x = @_;
+	my @b;
+	while (my $dep = shift) {
+		my @q = build_step_block( $dep->step->dependants ); 
+		my $rowspan = sum (map { $_->[0] && $_->[0]->{rowspan} || 1 } @q);
+		unshift $q[0], { 
+			name => $dep->step->name, 
+			instructions => $dep->step->instructions,
+			ingredients => [ map { 
+				my %ing; 
+				@ing{ qw/ingredient amount measurement/ } = 
+					($_->ingredient, $_->amount, $_->measurement); 
+				\%ing; 
+			} $dep->step->step_ingredients ],
+			rowspan => $rowspan,
+		};
+		push @b, @q;
+	}
+	@b ? @b : ([]);
+}
+
+sub build_execute_block {
+	my $recipe = shift;
+	my @b = build_step_block $recipe->dependants;
+	my $colspan = max (map {scalar @$_} @b);
+	foreach (@b) {
+		my $width = scalar @$_;
+		$_->[-1]->{colspan} = $colspan - $width;
+	}
+	{ 
+		name => $recipe->name,
+		description => $recipe->description,
+		steps => \@b,
+		colspan => $colspan,
+	};
+}
+
+sub execute :Local :Args(1) {
+	my ($self, $c, $id) = @_;
+	my $recipe = $c->model('RecipeDB::Recipe')->find({ id => $id});
+	$c->stash->{id} = $id;
+	$c->stash->{block} = build_execute_block $recipe;
+	$c->stash->{action} = "recipe-execute";
+	#$c->stash(template => 'execute-form.tt2');
+	$c->detach($c->view("HTML"));
+
 }
 
 =head1 AUTHOR

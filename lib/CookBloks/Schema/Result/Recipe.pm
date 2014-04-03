@@ -26,11 +26,13 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<recipes>
 
@@ -138,21 +140,6 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 dependent_steps
-
-Type: has_many
-
-Related object: L<CookBloks::Schema::Result::DependentStep>
-
-=cut
-
-__PACKAGE__->has_many(
-  "dependent_steps",
-  "CookBloks::Schema::Result::DependentStep",
-  { "foreign.recipe" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 likes
 
 Type: has_many
@@ -209,8 +196,23 @@ Composing rels: L</likes> -> user
 __PACKAGE__->many_to_many("users", "likes", "user");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-08-14 12:45:49
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ytpJnAuAQUk60vwaoGoUgA
+# Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-12-04 16:17:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7ify/4cRdH58UK1NT+nWwQ
+
+=head2 dependents
+
+Type: has_many
+
+Related object: L<CookBloks::Schema::Result::DependentStep>
+
+=cut
+
+__PACKAGE__->has_many(
+  "dependants",
+  "CookBloks::Schema::Result::RecipeFlow",
+  { "foreign.d_recipe" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

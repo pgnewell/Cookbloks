@@ -1,4 +1,4 @@
-<div id='step-stub' class='step hideinput'>
+<div id='step-stub' class='step hidden'>
 	[%# this is the recipe step. javascript will clone this and 
 		add it to the div for the list of steps in the recipe %]
 	<input type='hidden' name='step-step' />
@@ -19,11 +19,17 @@
 	<div class='dependency ui-widget-content' >
 		<p>Depends on</p>
 		<p name='dependency'> </p>
-		<input type='hidden' name='step-dependent' />
+		<input type='hidden' name='step-depended_upon' />
 	</div>
 </div>
 
-<div id='ingredient-stub' class='ingredient hideinput'>
+<div id='blok-stub' class='recipe-blok hidden'>
+	<button type='button' onclick='$(this).parent().addClass("recipe-done").removeClass("recipe-focus");'>
+		Done
+	</button>
+</div>
+
+<div id='ingredient-stub' class='ingredient hidden'>
 	<input type='hidden' name='ing-step' />
 	<input type='hidden' name='ing-seq' />
 	<input type='text' name='ing-ingredient' class='start' />
