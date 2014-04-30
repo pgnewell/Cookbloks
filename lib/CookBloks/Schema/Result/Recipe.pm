@@ -167,7 +167,7 @@ __PACKAGE__->has_many(
   "steps",
   "CookBloks::Schema::Result::Step",
   { "foreign.recipe" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
+  { cascade_copy => 0, cascade_delete => 1, order_by => \'step ASC'},
 );
 
 =head2 user
