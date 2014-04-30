@@ -4,6 +4,12 @@ use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller'; }
 
+use HTML::FormHandler::Field::Repeatable;
+use CookBloks::Form::Recipe::Search;
+
+has 'search_form' => ( isa => 'CookBloks::Form::Recipe::Search', is => 'rw',
+   lazy => 1, default => sub { CookBloks::Form::Recipe::Search->new } );
+
 #with 'Catalyst::TraitFor::Controller::jQuery::jqGrid';
 
 =head1 NAME
@@ -221,6 +227,20 @@ sub execute :Local :Args(1) {
 	#$c->stash(template => 'execute-form.tt2');
 	$c->detach($c->view("HTML"));
 
+}
+
+sub search :Local {
+	my ( $self, $c ) = @_;
+
+	$c->stash( template => 'recipes/search.tt2',
+			   form => $self->search_form );
+
+	# Validate and insert/update database
+	return unless $self->search_form->process();
+
+	# Form validated, return to the users list
+	$c->flash->{status_msg} = 'searching';
+	$c->res->redirect($c->uri_for('list'));
 }
 
 =head1 AUTHOR

@@ -114,7 +114,7 @@ __PACKAGE__->might_have(
   "dependent_steps_recipe_step",
   "CookBloks::Schema::Result::DependentStep",
   { "foreign.recipe" => "self.recipe", "foreign.step" => "self.step" },
-  { cascade_copy => 0, cascade_delete => 0 },
+  { cascade_copy => 0, cascade_delete => 1 },
 );
 
 =head2 dependent_steps_recipes_depended_upon
@@ -132,7 +132,7 @@ __PACKAGE__->has_many(
     "foreign.depended_upon" => "self.step",
     "foreign.recipe"        => "self.recipe",
   },
-  { cascade_copy => 0, cascade_delete => 0 },
+  { cascade_copy => 0, cascade_delete => 1 },
 );
 
 =head2 recipe
@@ -162,7 +162,7 @@ __PACKAGE__->has_many(
   "step_ingredients",
   "CookBloks::Schema::Result::StepIngredient",
   { "foreign.recipe" => "self.recipe", "foreign.step" => "self.step" },
-  { cascade_copy => 0, cascade_delete => 0 },
+  { cascade_copy => 0, cascade_delete => 1 },
 );
 
 =head2 type
@@ -195,6 +195,38 @@ __PACKAGE__->might_have(
   { "foreign.recipe" => "self.recipe", "foreign.d_step" => "self.step" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
+
+=head2 recursive_save
+
+=over 4
+
+=item Arguments: \%values
+
+=item Return Value: ?
+
+=back
+
+What update should do but it doesn't - not that this does it well
+
+=cut
+
+sub recursive_save {
+	my $self = shift;
+	my $news = shift;
+	ref $news eq "ARRAY" or $news = [ $news ];
+	foreach my $new (@$news) {
+		#my %current = map {$_ => $self->$_} $self->columns;
+		my %changes = map {
+			my $cmp = defined $new->{$_} && ($self->result_source->{_columns}->{$_}->{data_type} =~ /char$/i ? 
+				$self->$_ cmp $new->{$_} : $self->$_ <=> $new->{$_});
+			$cmp && { $_ => delete $new->{$_} } || ()
+		} $self->columns;
+		foreach ($self->relationships) {
+			defined $new->{$_} && $self->$_->can('recursive_save') &&
+				$self->$_->recursive_save($new->{$_});
+		}
+	}
+}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

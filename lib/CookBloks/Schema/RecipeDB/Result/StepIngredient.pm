@@ -121,7 +121,7 @@ Related object: L<CookBloks::Schema::RecipeDB::Result::Step>
 =cut
 
 __PACKAGE__->belongs_to(
-  "step",
+  "parent_step",
   "CookBloks::Schema::RecipeDB::Result::Step",
   { recipe => "recipe", step => "step" },
   { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },

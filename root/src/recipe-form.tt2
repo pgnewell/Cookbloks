@@ -38,7 +38,8 @@
 	<button type='button' onclick='$(this).parent().remove();'> - </button>
 </div>
 
-<form id="recipe-form" action="[% c.uri_for('/rest/recipe/0') %]" method="POST" enctype="multipart/form-data">
+<form id="recipe-form" action="[% c.uri_for('/rest/recipe/0') %]" method="PUT" enctype="multipart/form-data">
+    <input type='hidden' name='recipe-id' value="0"/>
     <input type='text' name='name'/>
     <textarea name='description'
 			onfocus="if(this.value==this.defaultValue)this.value='';" 

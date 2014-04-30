@@ -99,7 +99,7 @@ __PACKAGE__->belongs_to(
   "step_recipe_depended_upon",
   "CookBloks::Schema::Result::Step",
   { recipe => "recipe", step => "depended_upon" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head2 step_recipe_step
@@ -114,13 +114,44 @@ __PACKAGE__->belongs_to(
   "step_recipe_step",
   "CookBloks::Schema::Result::Step",
   { recipe => "recipe", step => "step" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 
 # Created by DBIx::Class::Schema::Loader v0.07035 @ 2013-12-05 16:41:01
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/899u7ukP3xh1B7/bPtaxQ
 
+=head2 recursive_save
+
+=over 4
+
+=item Arguments: \%values
+
+=item Return Value: ?
+
+=back
+
+What update should do but it doesn't - not that this does it well
+
+=cut
+
+sub recursive_save {
+	my $self = shift;
+	my $news = shift;
+	ref $news eq "ARRAY" or $news = [ $news ];
+	foreach my $new (@$news) {
+		#my %current = map {$_ => $self->$_} $self->columns;
+		my %changes = map {
+			my $cmp = defined $new->{$_} && ($self->result_source->{_columns}->{$_}->{data_type} =~ /char$/i ? 
+				$self->$_ cmp $new->{$_} : $self->$_ <=> $new->{$_});
+			$cmp && { $_ => delete $new->{$_} } || ()
+		} $self->columns;
+		foreach ($self->relationships) {
+			defined $new->{$_} && $self->$_->can('recursive_save') &&
+				$self->$_->recursive_save($new->{$_});
+		}
+	}
+}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

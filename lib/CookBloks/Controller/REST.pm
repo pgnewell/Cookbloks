@@ -9,11 +9,23 @@ __PACKAGE__->config(
 
 use GD::Image; 
 use GD::Image::Thumbnail;
+use Cwd;
 
 our @step_fields;
 our @ing_fields;
 our @post_step_fields;
 our @post_ing_fields;
+
+# We use the error action to handle errors
+sub error :Private {
+  my ( $self, $c, $code, $reason ) = @_;
+  $reason ||= 'Unknown Error';
+  $code ||= 500;
+ 
+  $c->res->status($code);
+# Error text is rendered as JSON as well
+  $c->stash->{data} = { error => $reason };
+}
 
 # multiple value fields in POST are prefixed with step- and ing- 
 # for steps and ingredients
@@ -28,12 +40,14 @@ sub _set_parameters {
 
 # deal the uploaded picture. assumes just one that's image
 sub _do_image_uploads {
+	my $picture_url;
 	my $c = shift;
 	if ( my $upload = $c->request->upload('image') ) {
-		my $dir = "./root/images/" . $c->user->id ;
-		my $picture_url = $dir . '/' . $upload->filename;
-		-d $dir || mkdir $dir ||
-			die  "Failed to create directory $dir";
+		my $olddir = getcwd;
+		chdir "./root";
+		my $dir = "./images/" . $c->user->id ;
+		$picture_url = $dir . '/' . $upload->filename;
+		-d $dir || mkdir $dir || die  "Failed to create directory $dir";
 		$upload->copy_to($picture_url) || 
 			die  "Failed to copy " . $upload->filename . " to $picture_url: $!" ;
 		my $gd = GD::Image->new( $picture_url ) ||
@@ -49,6 +63,7 @@ sub _do_image_uploads {
 		print PNG $png_data;
 		close PNG;
 	}
+	return $picture_url;
 }
 
 # get the recipe from the POSTed params put it in a resultset objcet
@@ -56,10 +71,12 @@ sub _do_image_uploads {
 sub _deserialize_from_params {
 	my $c = shift;
 	my $post_recipe = $c->request->params;
+	my $id = $post_recipe->{'recipe-id'};
 	return unless $post_recipe->{name};
-	_do_image_uploads $c;
+	my $picture_url = _do_image_uploads $c;
 
 	my %recipe = map {$_ => $post_recipe->{$_}} qw/name description/;
+	$recipe{id} = $id;
 	$recipe{user_id} = $c->user->id;
 
 	_set_parameters $post_recipe;
@@ -71,6 +88,7 @@ sub _deserialize_from_params {
 	} else {
 		@steps = ({map {$_, $post_recipe->{"step-$_"}} @step_fields});
 	}
+	$id or $_->{recipe} = $id foreach (@steps);
 
 	# same for ingredients 
 	if (ref $post_recipe->{"ing-ingredient"}) {
@@ -79,13 +97,15 @@ sub _deserialize_from_params {
 	} else {
 		@ings = ({map {$_, $post_recipe->{"ing-$_"}} @ing_fields});
 	}
+	$id or $_->{recipe} = $id foreach (@ings);
 
 	# create recipe object and assemble related entities for insertion
 	#my $recipe = $c->model("RecipeDB")->resultset("Recipe")->new( \%recipe );
 	foreach my $step (@steps) {
 		$step->{dependent_steps_recipes_depended_upon} = [];
 		if (my $depend = delete $step->{depended_upon}) {
-			unshift $step->{dependent_steps_recipes_depended_upon}, $depend;
+			unshift $step->{dependent_steps_recipes_depended_upon}, 
+				{ step  => $depend };
 		}
 		$step->{step_ingredients} = [
 			grep {$_->{step} 
@@ -95,9 +115,8 @@ sub _deserialize_from_params {
 		];
 	}
 	$recipe{steps} = \@steps;
-	my $recipe = $c->model("RecipeDB")->resultset("Recipe")->new( \%recipe );
 
-	return $recipe;
+	return \%recipe;
 }
 
 =head1 recipe
@@ -105,15 +124,15 @@ sub _deserialize_from_params {
 entity for a recipe in DB
 
 =cut
-sub recipe :Local ActionClass('REST') Args(1) {
+sub recipe :Local ActionClass('REST') {
 	my ($self, $c, $id) = @_;
 	my $saved_recipe;
 	if ( defined $id && $id > 0) {
 		$saved_recipe = $c->model('RecipeDB::Recipe')->find( { id => $id },);
+	} else {
+		$saved_recipe = $c->model('RecipeDB::Recipe')->new();
 	}
-	my $recipe = _deserialize_from_params( $c ) || $saved_recipe;
-
-	$c->stash(id => $id, recipe => $recipe);
+	$c->stash(id => $id, recipe => $saved_recipe);
 }
 
 =head1 recipe_list
@@ -131,16 +150,18 @@ sub recipe_list :Local :ActionClass('REST') Args(2) {
 
 =head1 recipe_GET
 
-response to GET request
+response to GET request - like what I want TO_JSON to do but more agressive 
+with the relationships.
 
 =cut
 sub recipe_GET {
 	my ($self, $c) = @_;
 	my $recipe = $c->stash->{recipe};
 	my @list = map { 
-		my $uri = $_->picture_url; 
-		$uri =~ s/ /%20/g;
+		my $uri = $_->picture_url;
+		$uri =~ s/ /%20/g; 
 		{
+			id => $_->id,
 			name => $_->name,
 			description => $_->description,
 			picture_url => $uri,
@@ -156,43 +177,14 @@ sub recipe_GET {
 					measurement => $_->measurement,
 					amount => $_->amount,
 				} } $_->step_ingredients ],
+				$_->dependent_steps_recipes_depended_upon ? 
+				(depends_upon => [ map { 
+					$_ && { step => $_->depended_upon } || ()
+				} $_->dependent_steps_recipe_step ]) : (),
 			} } $_->steps ],
 		}
 	} ($recipe);
 	$self->status_ok($c, entity => $list[0] );
-}
-
-=head1 filter_recipe
-
-translates a resultset to a readable object
-
-=cut
-
-sub filter_recipe {
-	my $recipe = shift;
-	my @list = map {
-        my $uri = $_->picture_url;
-        $uri =~ s/ /%20/g;
-        {
-            name => $_->name,
-            description => $_->description,
-            picture_url => $uri,
-            author => $_->user->first_name . " " . $_->user->last_name,
-            steps => [ map { {
-                step => $_->step,
-                name => $_->name,
-                instructions => $_->instructions,
-                type => $_->type,
-                ingredients => [ map { {
-                    seq => $_->seq,
-                    ingredient => $_->ingredient,
-                    measurement => $_->measurement,
-                    amount => $_->amount,
-                } } $_->step_ingredients ],
-            } } $_->steps ],
-        }
-    } ($recipe);
-	return $list[0];
 }
 
 =head1 recipe_POST
@@ -204,6 +196,7 @@ id or URI address (which would be [domain]/rest/recipe/[id])
 =cut
 sub recipe_POST {
 	my ($self, $c) = @_;
+	$c->detach('error', [404, "Must be logged in to save a recipe"]) unless $c->user && $c->user->id;
 	my $recipe = $c->stash->{recipe};
 	$recipe->insert();
 	$self->status_ok($c, entity => {id => $recipe->id});
@@ -219,7 +212,22 @@ specified
 =cut
 sub recipe_PUT {
 	my ($self, $c) = @_;
+	$c->detach('error', [404, "Must be logged in to save a recipe"]) unless $c->user && $c->user->id;
 	my $id = $c->stash->{id};
+	my $saved_recipe = $c->stash->{recipe};
+	my $form_recipe = _deserialize_from_params( $c );
+	#$saved_recipe->set_inflated_columns($form_recipe);
+	#$c->model('RecipeDB')->schema->txn_do(
+	#    sub {
+			$saved_recipe = DBIx::Class::ResultSet::RecursiveUpdate::Functions::recursive_update(
+				resultset => $c->model('RecipeDB')->schema->resultset('Recipe'),
+				updates => $form_recipe,
+			);
+	#       $saved_recipe->discard_changes;
+	#   }
+	#);
+	#$saved_recipe->recursive_save( $form_recipe );
+
 	$self->status_ok($c, entity => {id => $id});
 }
 
@@ -240,8 +248,8 @@ sub recipe_list_GET {
 	);
 
 	my @list = map { 
-		my $uri = $_->picture_url; 
-		$uri =~ s/ /%20/g;
+		my $uri = $_->picture_url;
+		$uri =~ s/ /%20/g; 
 		{
 			id => $_->id,
 			name => $_->name,
@@ -285,7 +293,6 @@ sub get_dependent_steps {
 	];
 }
 
-
 =head1 recipe_flow_GET
 
 a hierarchical list of steps of recipes
@@ -307,6 +314,11 @@ sub recipe_flow_GET {
 
 	$self->status_ok($c, entity => { recipe => \%recipe });
 }
-
+sub recipe_DELETE {
+	my ($self, $c) = @_;
+	my $recipe = $c->stash->{recipe};
+	$recipe->delete();
+	$self->status_ok($c);
+}
 
 1;

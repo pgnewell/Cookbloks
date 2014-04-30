@@ -167,7 +167,7 @@ __PACKAGE__->has_many(
   "steps",
   "CookBloks::Schema::Result::Step",
   { "foreign.recipe" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
+  { cascade_copy => 0, cascade_delete => 1 },
 );
 
 =head2 user
@@ -211,9 +211,40 @@ __PACKAGE__->has_many(
   "dependants",
   "CookBloks::Schema::Result::RecipeFlow",
   { "foreign.d_recipe" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
+  { cascade_copy => 0, cascade_delete => 1 },
 );
 
+=head2 recursive_save
+
+=over 4
+
+=item Arguments: \%values
+
+=item Return Value: ?
+
+=back
+
+What update should do but it doesn't - not that this does it well
+
+=cut
+
+sub recursive_save {
+	my $self = shift;
+	my $news = shift;
+	ref $news eq "ARRAY" or $news = [ $news ];
+	foreach my $new (@$news) {
+		#my %current = map {$_ => $self->$_} $self->columns;
+		my %changes = map {
+			my $cmp = defined $new->{$_} && ($self->result_source->{_columns}->{$_}->{data_type} =~ /char$/i ? 
+				$self->$_ cmp $new->{$_} : $self->$_ <=> $new->{$_});
+			$cmp && { $_ => delete $new->{$_} } || ()
+		} $self->columns;
+		foreach ($self->relationships) {
+			defined $new->{$_} && $self->$_->can('recursive_save') &&
+				$self->$_->recursive_save($new->{$_});
+		}
+	}
+}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

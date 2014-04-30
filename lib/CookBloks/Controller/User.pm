@@ -3,6 +3,10 @@ use Moose;
 use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller'; }
+use CookBloks::Form::User;
+
+has 'form' => ( isa => 'CookBloks::Form::User', is => 'rw',
+   lazy => 1, default => sub { CookBloks::Form::User->new } );
 
 =head1 NAME
 
@@ -88,6 +92,33 @@ sub logout :Local :Args(0) {
 	#$c->response->redirect($c->uri_for('/'));
 	$c->response->redirect($c->uri_for( '/formula/list' ));
 		#$c->controller('Root')->action_for('/')));
+	return;
+}
+
+sub edit : Local {
+	my ( $self, $c, $user_id ) = @_;
+
+	$c->stash( template => 'users/edit.tt2',
+			   form => $self->form );
+
+	# Validate and insert/update database
+	return unless $self->form->process( item_id => $user_id,
+	   params => $c->req->parameters,
+	   schema => $c->model('RecipeDB')->schema );
+
+	# Form validated, return to the users list
+	$c->flash->{status_msg} = 'User saved';
+	$c->res->redirect($c->uri_for('list'));
+}
+
+sub list : Local {
+	my ( $self, $c, $user_id ) = @_;
+	my $users = $c->model('RecipeDB::User')->search();
+
+	$c->stash( 
+		template => 'users/list.tt2', 
+		users => $users,
+	);
 	return;
 }
 
