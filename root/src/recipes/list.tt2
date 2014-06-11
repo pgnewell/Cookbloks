@@ -1,25 +1,25 @@
-Here is a list
+<h1>Where is a list?</h1>
 <ul>
 [% FOREACH recipe IN recipes -%]
 	<li>
 		[% recipe.picture_url %]
 		[% recipe.name %]
 		[% recipe.description %]
-	</li>
-	<ul>
-	[% FOREACH step IN recipe.steps -%]
-		<li>
-			[% step.name %]
-		</li>
 		<ul>
-		[% FOREACH ingredient IN step.step_ingredients -%]
+		[% FOREACH step IN recipe.steps -%]
 			<li>
-				[% ingredient.name %]
+				[% step.name %]
 			</li>
+			<ul>
+			[% FOREACH ingredient IN step.step_ingredients -%]
+				<li>
+					[% ingredient.ingredient %]
+				</li>
+			[% END -%]
+			</ul>
 		[% END -%]
 		</ul>
-	[% END -%]
-	</ul>
+	</li>
 [% END -%]
 </ul>
 

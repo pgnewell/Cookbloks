@@ -36,9 +36,9 @@ sub list :Local {
 
 	# Retrieve all of the book records as book model objects and store in the
 	# stash where they can be accessed by the TT template
-	# $c->stash(books => [$c->model('DB::Book')->all]);
+	$c->stash(users => [$c->model('DB::User')->all]);
 	# But, for now, use this code until we create the model later
-	$c->stash(users => '');
+	# $c->stash(users => '');
 
 	# Set the TT template to use.  You will almost always want to do this
 	# in your action methods (action methods respond to user input in
