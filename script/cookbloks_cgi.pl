@@ -15,7 +15,11 @@ See L<Catalyst::Manual>
 
 =head1 DESCRIPTION
 
+<<<<<<< HEAD
 Run a Catalyst application as a cgi script.
+=======
+Run a Catalyst application as a CGI script.
+>>>>>>> de0736ada5717b075428d8f58d1aeba1674a78cb
 
 =head1 AUTHORS
 
