@@ -69,7 +69,7 @@ sub _do_image_uploads {
 
 # get the recipe from the POSTed params put it in a resultset objcet
 # return undef if no name
-sub _deserialize_from_params {
+sub _serialize_from_params {
 	my $c = shift;
 	my $post_recipe = $c->request->params;
 	my $id = $post_recipe->{'recipe-id'};
@@ -129,10 +129,18 @@ entity for a recipe in DB
 sub recipe :Local ActionClass('REST') {
 	my ($self, $c, $id) = @_;
 	my $saved_recipe;
+	my $model = $c->model('RecipeDB::Recipe');
 	if ( defined $id && $id > 0) {
-		$saved_recipe = $c->model('RecipeDB::Recipe')->find( { id => $id },);
+		$saved_recipe = $model->find( 
+			{ id => $id }, 
+			{result_class => 'DBIx::Class::ResultClass::HashRefInflator', prefetch => { steps => 'step_ingredients'} }
+		);
 	} else {
+<<<<<<< HEAD
 		$saved_recipe = $c->model('RecipeDB::Recipe')->new({});
+=======
+		$saved_recipe = $model->new();
+>>>>>>> 504394d71121f9c6642a1843446d47e2782de79d
 	}
 	$c->stash(id => $id, recipe => $saved_recipe);
 }
@@ -149,7 +157,26 @@ sub recipe_list :Local :ActionClass('REST') Args(2) {
 	$lines ||= 20;
 	$c->stash(page => $page, page_size => $lines);
 }
+=head1 _deserialize_from_dbic
 
+create json/xml/yaml-able hash from DBIC resultset with depth
+
+=cut
+
+sub _deserialize_from_dbic {
+	my $resultset = shift;
+	my $return = $resultset->get_column_data;
+	my @relationships = $resultset->relationships;
+	@{$return}{@relationships} = map {
+		{
+			$_ => {
+				map {[
+				0
+				]} $resultset->$_
+			}
+		}
+	} grep {$resultset->$_} @relationships;
+}
 =head1 recipe_GET
 
 response to GET request - like what I want TO_JSON to do but more agressive 
@@ -159,6 +186,7 @@ with the relationships.
 sub recipe_GET {
 	my ($self, $c) = @_;
 	my $recipe = $c->stash->{recipe};
+=for comment
 	my @list = map { 
 		my $uri = $_->picture_url;
 		$uri =~ s/ /%20/g; 
@@ -187,6 +215,8 @@ sub recipe_GET {
 		}
 	} ($recipe);
 	$self->status_ok($c, entity => $list[0] );
+=cut
+	$self->status_ok($c, entity => $recipe );
 }
 
 =head1 recipe_POST
@@ -217,7 +247,7 @@ sub recipe_PUT {
 	$c->detach('error', [404, "Must be logged in to save a recipe"]) unless $c->user && $c->user->id;
 	my $id = $c->stash->{id};
 	my $saved_recipe = $c->stash->{recipe};
-	my $form_recipe = _deserialize_from_params( $c );
+	my $form_recipe = _serialize_from_params( $c );
 	$form_recipe->{id} || delete $form_recipe->{id};
 	#$saved_recipe->set_inflated_columns($form_recipe);
 	#$c->model('RecipeDB')->schema->txn_do(
@@ -258,7 +288,7 @@ sub recipe_list_GET {
 			id => $_->id,
 			name => $_->name,
 			description => $_->description,
-			picture_url => "<img src='$uri' />",
+			picture_url => "<img src='$uri' />", # yes, this belongs in a template
 		    author => $_->user->first_name . " " . $_->user->last_name,
 		} 
 	} $rs->all();
@@ -277,7 +307,15 @@ sub recipe_flow :Local :ActionClass('REST') Args(1) {
 
 }
 
-sub get_dependent_steps {
+=pod comment
+
+_get_dependent_steps is an internal function to recursively return all dependent steps as a tree
+
+it is effectively a deserialization from the result limited to steps and ingredients
+
+=cut
+
+sub _get_dependent_steps {
 	[ 
 		map { 
 			$_ && { # The && is required because $dependants gives an array of one undef when empty
@@ -291,7 +329,7 @@ sub get_dependent_steps {
 					measurement => $_->measurement,
 					amount => $_->amount,
 				} } $_->step->step_ingredients ],
-				dependent_steps => get_dependent_steps( $_->step->dependants ),
+				dependent_steps => _get_dependent_steps( $_->step->dependants ),
 			} 
 		} @_
 	];
@@ -308,13 +346,14 @@ sub recipe_flow_GET {
 
 	my $id = $c->stash->{id};
 	my $recipe = $c->model('RecipeDB')->resultset('Recipe')->find( {id => $id} );
+	# if the next two lines are a deserialization, why are they not in the same function
 	my %recipe = ( 
 		id => $recipe->id,
 		name => $recipe->name,
 		description => $recipe->description,
 		author => $recipe->user->first_name . " " . $recipe->user->last_name,
 	);
-	$recipe{steps} = get_dependent_steps( $recipe->dependants );
+	$recipe{steps} = _get_dependent_steps( $recipe->dependants );
 
 	$self->status_ok($c, entity => { recipe => \%recipe });
 }

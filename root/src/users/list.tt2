@@ -1,0 +1,17 @@
+<h1>List of all users</h1>
+<ul>
+
+<table class="user-list">
+<tr>
+  <th> First Name </th>
+  <th> Last Name </th>
+  <th> e-mail </th>
+</tr>
+[% WHILE (user = users.next) %]
+<tr>
+  <td>[% user.first_name %]</td>
+  <td>[% user.last_name %]</td>
+  <td>[% user.email %]</td>
+</tr>
+[% END %]
+</table>

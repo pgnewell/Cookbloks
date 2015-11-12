@@ -6,10 +6,10 @@ use Module::Install::Catalyst; # Complain loudly if you don't have
                                # Catalyst::Devel installed or haven't said
                                # 'make dist' to create a standalone tarball.
 
-name 'CookBloks';
-all_from 'lib/CookBloks.pm';
+name 'Cookbloks';
+all_from 'lib/Cookbloks.pm';
 
-requires 'Catalyst::Runtime' => '5.90019';
+requires 'Catalyst::Runtime' => '5.90064';
 requires 'Catalyst::Plugin::ConfigLoader';
 requires 'Catalyst::Plugin::Static::Simple';
 requires 'Catalyst::Action::RenderView';
@@ -17,6 +17,7 @@ requires 'Moose';
 requires 'namespace::autoclean';
 requires 'Config::General'; # This should reflect the config file format you've chosen
                  # See Catalyst::Plugin::ConfigLoader for supported formats
+requires 'Catalyst::Plugin::StackTrace';
 test_requires 'Test::More' => '0.88';
 catalyst;
 

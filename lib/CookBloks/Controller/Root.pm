@@ -57,7 +57,7 @@ Check if there is a user and, if not, forward to login page
 
 =cut
 
-=commented oout
+=pod comment
 
 # Note that 'auto' runs after 'begin' but before your actions and that
 # 'auto's "chain" (all from application path to most specific class are run)
