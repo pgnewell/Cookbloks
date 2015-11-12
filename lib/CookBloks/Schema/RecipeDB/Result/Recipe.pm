@@ -64,10 +64,15 @@ __PACKAGE__->table("recipes");
 
 =head2 picture_url
 
-  data_type: 'varchar'
+  data_type: 'text'
   default_value: null
   is_nullable: 1
-  size: 255
+
+=head2 picture_url
+
+  data_type: 'text'
+  default_value: null
+  is_nullable: 1
 
 =head2 user_id
 
@@ -108,10 +113,19 @@ __PACKAGE__->add_columns(
   },
   "picture_url",
   {
-    data_type => "varchar",
+    data_type => "text",
     default_value => \"null",
     is_nullable => 1,
-    size => 255,
+	is_fs_column => 1,
+	fs_column_path => CookBloks->path_to( 'root', 'images' ) . "",
+  },
+  "thumbnail",
+  {
+    data_type => "text",
+    default_value => \"null",
+    is_nullable => 1,
+	is_fs_column => 1,
+	fs_column_path => CookBloks->path_to( 'root', 'images' ) . "",
   },
   "user_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },

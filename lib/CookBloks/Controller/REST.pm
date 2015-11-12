@@ -40,30 +40,31 @@ sub _set_parameters {
 
 # deal the uploaded picture. assumes just one that's image
 sub _do_image_uploads {
-	my $picture_url;
+	my ($picture_url, $thumbnail);
 	my $c = shift;
 	if ( my $upload = $c->request->upload('image') ) {
 		my $olddir = getcwd;
 		chdir "./root";
-		my $dir = "./images/" . $c->user->id ;
+		my $dir = "/images/" . $c->user->id ;
 		$picture_url = $dir . '/' . $upload->filename;
 		-d $dir || mkdir $dir || die  "Failed to create directory $dir";
-		$upload->copy_to($picture_url) || 
+		my $file = ".$picture_url";
+		$upload->copy_to($file) || 
 			die  "Failed to copy " . $upload->filename . " to $picture_url: $!" ;
-		my $gd = GD::Image->new( $picture_url ) ||
+		my $gd = GD::Image->new( $file ) ||
 			die  "failed in thumbnail $picture_url: $!" ;
 		my $png = $gd->thumbnail({w=>50, h=>50}) ||
-			die  "failed in thumbnail $picture_url: $!" ;
+			die  "failed in thumbnail $file: $!" ;
 		my $png_data = $png->png() ||
-			die  "cannot png file $picture_url: $!" ;
-		my $thumbnail = $picture_url;
-		$thumbnail =~ s/\.jpg$/-50x50.png/;
+			die  "cannot png file $file: $!" ;
+		$thumbnail = $file;
+	   	$thumbnail =~ s/\.jpg$/-50x50.png/;
 		open PNG, ">$thumbnail" ||
 			die  "cannot write file $thumbnail: $!" ;
 		print PNG $png_data;
 		close PNG;
 	}
-	return $picture_url;
+	return ( $picture_url, $thumbnail );
 }
 
 # get the recipe from the POSTed params put it in a resultset objcet
@@ -73,9 +74,10 @@ sub _deserialize_from_params {
 	my $post_recipe = $c->request->params;
 	my $id = $post_recipe->{'recipe-id'};
 	return unless $post_recipe->{name};
-	my $picture_url = _do_image_uploads $c;
 
 	my %recipe = map {$_ => $post_recipe->{$_}} qw/name description/;
+	@recipe{ qw/picture_url thumbnail/ } = _do_image_uploads $c;
+
 	$recipe{id} = $id;
 	$recipe{user_id} = $c->user->id;
 
@@ -130,7 +132,7 @@ sub recipe :Local ActionClass('REST') {
 	if ( defined $id && $id > 0) {
 		$saved_recipe = $c->model('RecipeDB::Recipe')->find( { id => $id },);
 	} else {
-		$saved_recipe = $c->model('RecipeDB::Recipe')->new();
+		$saved_recipe = $c->model('RecipeDB::Recipe')->new({});
 	}
 	$c->stash(id => $id, recipe => $saved_recipe);
 }
@@ -216,6 +218,7 @@ sub recipe_PUT {
 	my $id = $c->stash->{id};
 	my $saved_recipe = $c->stash->{recipe};
 	my $form_recipe = _deserialize_from_params( $c );
+	$form_recipe->{id} || delete $form_recipe->{id};
 	#$saved_recipe->set_inflated_columns($form_recipe);
 	#$c->model('RecipeDB')->schema->txn_do(
 	#    sub {
@@ -228,7 +231,7 @@ sub recipe_PUT {
 	#);
 	#$saved_recipe->recursive_save( $form_recipe );
 
-	$self->status_ok($c, entity => {id => $id});
+	$self->status_ok($c, entity => {id => $saved_recipe->id});
 }
 
 =head1 recipe_list_GET
@@ -249,7 +252,8 @@ sub recipe_list_GET {
 
 	my @list = map { 
 		my $uri = $_->picture_url;
-		$uri =~ s/ /%20/g; 
+		$uri or $uri = "/images/0/brioches.png";
+		$uri and $uri =~ s/ /%20/g; 
 		{
 			id => $_->id,
 			name => $_->name,
