@@ -112,6 +112,19 @@ sub dump :Chained('formula') :PathPart('dump') :Args(0) {
 				template => 'utils/dump.tt2');
 }
 
+sub edit1 : Local Args(1) {
+	my ($self, $c, $id) = @_;
+    my $recipe = $c->model('RecipeDB::Recipe')->find($id);
+    my $form = HTML::FormHandler::Model::DBIC->new_with_traits(
+       traits => ['HTML::FormHandler::TraitFor::DBICFields'],
+       field_list => [ 'submit' => { type => 'Submit', value => 'Save', order => 99 } ],
+       item => $recipe );
+	$c->stash( template => 'recipes/search.tt2',
+			   form => $form );
+	return unless $form->process();
+	$c->res->redirect( $c->uri_for($c->controller->action_for('list')) );
+}
+
 sub edit : Local Args(1) {
 	my ($self, $c, $id) = @_;
 	$c->stash->{id} = $id;
