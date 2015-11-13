@@ -4,7 +4,8 @@ use strict;
 use base 'Catalyst::Model::DBIC::Schema';
 use Catalyst qw{ ConfigLoader };
 
-=cut
+# removing config in favour of config file
+=pod
 __PACKAGE__->config(
     schema_class => 'CookBloks::Schema',
     
@@ -15,6 +16,7 @@ __PACKAGE__->config(
         AutoCommit => q{1},
     }
 );
+=cut
 
 =head1 NAME
 
