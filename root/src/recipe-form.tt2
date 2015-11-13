@@ -39,15 +39,29 @@
 </div>
 
 <form id="recipe-form" action="[% c.uri_for('/rest/recipe/0') %]" method="PUT" enctype="multipart/form-data">
-    <input type='hidden' name='recipe-id' value="0"/>
-    <input type='text' name='name'/>
-    <textarea name='description'
-			onfocus="if(this.value==this.defaultValue)this.value='';" 
-			onblur="if(this.value=='')this.value=this.defaultValue;">
-		Recipe description
-	</textarea>
-    <input type='file' name='image' onchange="readURL(this,$('#picture'));"/>
-    <img id="picture" src="#" alt="your image" />
+	<input type='hidden' name='recipe-id' value="0"/>
+	<table border="1">
+		<tbody>
+			<tr>
+				<td>
+					<input type='text' name='name'/>
+				</td>
+				<td rowspan="2" align="top">
+					<textarea name='description'
+							onfocus="if(this.value==this.defaultValue)this.value='';" 
+							onblur="if(this.value=='')this.value=this.defaultValue;">
+						Recipe description
+					</textarea>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<input type='file' name='image' onchange="readURL(this,$('#picture'));"/><br/>
+					<img id="picture" src="#" alt="your image" />
+				</td>
+			</tr>
+		</tbody>
+	</table>
 	<div id='step-grid'>
 	[%# this div will receive a list of steps concocted from the step-stub above %]
 		<div id='step-list'>
@@ -55,5 +69,5 @@
 		<button type='button' 
 			onclick='create_step_block($(this).prev()); return false;'>+Step</button>
 	</div>
-    <input type='submit' value='Save Recipe'/>
+	<input type='submit' value='Save Recipe'/>
 </form>
